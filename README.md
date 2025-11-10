@@ -60,6 +60,7 @@ See [`apps/scholarharvester/LEGAL_NOTES.md`](apps/scholarharvester/LEGAL_NOTES.m
 
 1. Install prerequisites described in each app README.
 2. Run `make dev` and visit `http://localhost:3000/planner` once the stack is up.
-3. Submit pull requests with passing CI (see `.github/workflows/ci.yml`).
+3. Commit on the `main` branch (the default deploy branch) and push with `git push origin main` once CI passes.
+4. Submit pull requests with passing CI (see `.github/workflows/ci.yml`).
 
 MIT licensed. See [LICENSE](LICENSE).

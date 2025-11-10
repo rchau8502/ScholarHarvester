@@ -39,3 +39,14 @@ make down
 ```
 
 The Compose file exposes ScholarAPI on `http://localhost:8080` and ScholarPath on `http://localhost:3000`. Update the `.env` files inside each app if deploying to a different host.
+
+## Git remotes
+
+Scholarstack treats `main` as the canonical branch. After committing your work locally, configure a remote once per clone and push with:
+
+```bash
+git remote add origin <your-git-url>  # skip if already configured
+git push origin main
+```
+
+Running `git push origin main` ensures the deployment automation tracks the correct branch.
