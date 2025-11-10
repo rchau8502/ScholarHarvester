@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: scholar
+      POSTGRES_PASSWORD: scholar
+      POSTGRES_DB: scholarstack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  scholarapi:
+    build: ./apps/scholarapi
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+psycopg://scholar:scholar@postgres:5432/scholarstack
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8080
+      RATE_LIMIT_PER_MINUTE: "240"
+      CORS_ALLOW_ORIGINS: "http://localhost:3000"
+    ports:
+      - "8080:8080"
+
+  scholarpath:
+    build: ./apps/scholarpath
+    depends_on:
+      - scholarapi
+    environment:
+      NEXT_PUBLIC_API_URL: http://scholarapi:8080
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

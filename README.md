@@ -1,29 +1,57 @@
-# ScholarHarvester Utilities
+# Scholarstack
 
-This repository currently provides a lightweight command-line utility for
-scanning directories for lines that match a specified pattern ("error" by
-default). The tool ignores binary files and hidden files unless you explicitly
-request otherwise.
+Scholarstack is a mono-repo that powers legal, transparent California college planning. It contains three core applications:
 
-## Usage
+- **ScholarHarvester v2** (`apps/scholarharvester/`): lawful data collectors that hydrate the shared Postgres schema while enforcing strict provenance and robots controls.
+- **ScholarAPI** (`apps/scholarapi/`): a FastAPI-based read-only service that exposes planning data to clients with pagination, rate limiting, and CORS.
+- **ScholarPath** (`apps/scholarpath/`): a Next.js 15 application that renders the Planner and Evidence Drawer experience for counselors and families.
 
-```bash
-python -m scholar_harvester.error_scanner /path/to/scan
-```
+All services are dockerized and wired together through `docker-compose`. Redis orchestrates the harvester queue, Postgres stores canonical datasets, and the API/Web apps consume the same schema.
 
-Useful options:
-
-* `--pattern` – provide a custom regular expression to search for.
-* `--case-sensitive` – run a case-sensitive search.
-* `--include-hidden` – scan hidden files and directories.
-* `--extensions` – restrict the scan to specific file extensions (e.g. `.log`).
-
-The command exits with status code `1` when matches are found (so it can easily
-integrate with CI pipelines) and prints the matching lines alongside their
-locations.
-
-## Running the tests
+## Quickstart
 
 ```bash
-PYTHONPATH=src python -m unittest discover -s tests
+# start the full stack in development mode
+make dev
+
+# seed the database with demo content (run after migrations)
+make seed
+
+# run unit and integration tests across apps
+make test
 ```
+
+Each application ships with its own README that details architecture, configuration, and contributing notes:
+
+- [ScholarHarvester README](apps/scholarharvester/README.md)
+- [ScholarAPI README](apps/scholarapi/README.md)
+- [ScholarPath README](apps/scholarpath/README.md)
+
+## Legal Guardrails
+
+Scholarstack **never** scrapes ASSIST.org and only fetches data from official UC, CSU, CCCCO, and IPEDS sources that permit automated access. The harvester respects `robots.txt`, throttles requests to at least 2 seconds per domain, and records the compliance decision for every run in the database. Provenance for every metric includes title, publisher, year, URL, and interpretation notes, and is surfaced throughout the API and UI.
+
+See [`apps/scholarharvester/LEGAL_NOTES.md`](apps/scholarharvester/LEGAL_NOTES.md) and [`apps/scholarharvester/DATA_PROVENANCE.md`](apps/scholarharvester/DATA_PROVENANCE.md) for more detail.
+
+## Repository Layout
+
+```
+.
+├── apps/
+│   ├── scholarharvester/
+│   ├── scholarapi/
+│   └── scholarpath/
+├── .devcontainer/
+├── .github/workflows/
+├── docker-compose.yml
+├── Makefile
+└── README.md
+```
+
+## Contributing
+
+1. Install prerequisites described in each app README.
+2. Run `make dev` and visit `http://localhost:3000/planner` once the stack is up.
+3. Submit pull requests with passing CI (see `.github/workflows/ci.yml`).
+
+MIT licensed. See [LICENSE](LICENSE).

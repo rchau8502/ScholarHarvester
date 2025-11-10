@@ -1,0 +1,17 @@
+interactions:
+- request:
+    method: GET
+    uri: https://opendata.ucop.edu/api/uc_admissions_demo.json
+    body: null
+    headers: {}
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      content-type:
+      - application/json
+    body:
+      string: '{"year": 2023, "citation": {"title": "UC Undergraduate Admissions", "publisher": "University of California", "year": 2023, "url": "https://opendata.ucop.edu/admissions", "interpretation_note": "System wide reporting"}, "campuses": [{"slug": "uc-davis", "name": "UC Davis", "admit_rate": 0.35, "gpa_p50": 3.85}]}'
+  recorded_at: '2024-01-01T00:00:00'
+version: 1
