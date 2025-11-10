@@ -19,7 +19,15 @@ make seed
 
 # run unit and integration tests across apps
 make test
+
+# start the stack in detached (production-like) mode
+make up
+
+# stop the detached stack and remove containers
+make down
 ```
+
+Refer to [`docs/OPERATIONS.md`](docs/OPERATIONS.md) for a deeper runbook covering log inspection and environment-specific notes.
 
 Each application ships with its own README that details architecture, configuration, and contributing notes:
 
