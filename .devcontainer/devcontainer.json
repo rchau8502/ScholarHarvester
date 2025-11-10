@@ -1,0 +1,21 @@
+{
+  "name": "Scholarstack",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "scholarapi",
+  "workspaceFolder": "/workspace/scholarstack",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "astro-build.astro-vscode"
+      ]
+    }
+  }
+}

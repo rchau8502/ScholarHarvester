@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: scholar
+          POSTGRES_PASSWORD: scholar
+          POSTGRES_DB: scholarstack
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U scholar" --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql+psycopg://scholar:scholar@localhost:5432/scholarstack
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.7.1
+
+      - name: Install scholarharvester deps
+        working-directory: apps/scholarharvester
+        run: |
+          poetry install
+
+      - name: Run migrations
+        working-directory: apps/scholarharvester
+        run: |
+          poetry run alembic upgrade head
+
+      - name: Test scholarharvester
+        working-directory: apps/scholarharvester
+        run: |
+          poetry run pytest
+
+      - name: Install scholarapi deps
+        working-directory: apps/scholarapi
+        run: |
+          poetry install
+
+      - name: Test scholarapi
+        working-directory: apps/scholarapi
+        run: |
+          poetry run pytest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install scholarpath deps
+        working-directory: apps/scholarpath
+        run: pnpm install
+
+      - name: Run web unit tests
+        working-directory: apps/scholarpath
+        run: pnpm test
+
+      - name: Run Playwright tests
+        working-directory: apps/scholarpath
+        run: pnpm exec playwright install --with-deps && pnpm exec playwright test
