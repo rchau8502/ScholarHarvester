@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.log
+*.sqlite3
+.env
+*.env.local
+.env.local.example
+node_modules/
+apps/zot-planner/.next/
+apps/zot-planner/node_modules/
+apps/zot-planner/.turbo/
+apps/zot-planner/playwright-report/
+.DS_Store

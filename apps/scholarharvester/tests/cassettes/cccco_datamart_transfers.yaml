@@ -1,0 +1,20 @@
+http_interactions:
+- request:
+    method: GET
+    uri: https://datamart.cccco.edu/robots.txt
+    body:
+      encoding: UTF-8
+      string: ''
+    headers:
+      Accept: '*/*'
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - text/plain; charset=UTF-8
+    body:
+      encoding: UTF-8
+      string: "User-agent: *\nAllow: /\n"
+recorded_with: VCR.py 4.0.0

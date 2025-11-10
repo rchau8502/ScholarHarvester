@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "scholarharvester"
+version = "0.1.0"
+description = "California college data harvester"
+authors = ["ScholarStack <contact@scholarstack.org>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "scholarharvester", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "^0.26"
+pandas = "^2.1"
+pyarrow = "^15.0"
+pdfplumber = "^0.10"
+sqlalchemy = "^2.0"
+alembic = "^1.12"
+typer = "^0.9"
+redis = "^5.3"
+  python-dotenv = "^1.0"
+  vcrpy = "^4.0"
+  awscrt = {version = "^0.16", optional = true}
+  rq = "^1.0"
+  pyyaml = "^6.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1"
+mypy = "^1.11"
+pytest = "^7.3"
+pytest-asyncio = "^0.21"
+
+[tool.poetry.scripts]
+scholarharvester = "scholarharvester.cli:app"
+scholarharvester-seed = "scholarharvester.scripts.seed_demo:main"
+
+[build-system]
+requires = ["poetry-core>=1.5.1"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,11 @@
+{
+  "name": "ScholarStack",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "scholarapi",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "forwardPorts": [8080, 3000],
+  "features": {}
+}

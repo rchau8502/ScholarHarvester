@@ -1,0 +1,41 @@
+sources:
+  - name: UC Info Center Transfers
+    adapter: uc_info_center_transfers_major
+    base_url: https://www.universityofcalifornia.edu/infocenter
+    throttle_seconds: 2
+    allowed_mime: ["text/csv", "application/json"]
+  - name: UC Info Center Freshman
+    adapter: uc_info_center_freshman_discipline
+    base_url: https://www.universityofcalifornia.edu/infocenter
+    throttle_seconds: 2
+    allowed_mime: ["text/csv", "application/json"]
+  - name: UC Source School Admissions
+    adapter: uc_info_center_admissions_source_school
+    base_url: https://www.universityofcalifornia.edu/infocenter
+    throttle_seconds: 2
+    allowed_mime: ["text/csv", "application/json"]
+  - name: CSU Transfers Dashboard
+    adapter: csu_system_dashboards_transfer
+    base_url: https://www.calstate.edu/data
+    throttle_seconds: 2
+    allowed_mime: ["text/csv"]
+  - name: CSU Freshman Dashboard
+    adapter: csu_system_dashboards_freshman
+    base_url: https://www.calstate.edu/data
+    throttle_seconds: 2
+    allowed_mime: ["text/csv"]
+  - name: CCCCO Datamart Transfers
+    adapter: cccco_datamart_transfers
+    base_url: https://datamart.cccco.edu
+    throttle_seconds: 2
+    allowed_mime: ["application/json", "text/csv"]
+  - name: CCC Catalog Courses
+    adapter: ccc_catalog_courses
+    base_url: https://www.cccco.edu/catalog
+    throttle_seconds: 2
+    allowed_mime: ["text/html", "application/pdf"]
+  - name: CCC Articulation PDFs
+    adapter: ccc_articulation_pdfs
+    base_url: https://www.mtsac.edu
+    throttle_seconds: 2
+    allowed_mime: ["application/pdf"]
