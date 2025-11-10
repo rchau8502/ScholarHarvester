@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+.poetry/
+node_modules/
+.apps_cache/
+apps/scholarpath/.next/
+apps/scholarpath/out/
+postgres_data/

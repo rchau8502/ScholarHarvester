@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+.banner {
+  @apply bg-yellow-100 text-yellow-900 text-sm text-center py-2;
+}
