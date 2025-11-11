@@ -102,7 +102,7 @@ export default function PlannerPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
       <header className="space-y-3">
         <p className="text-lg text-slate-400">Evidence Drawer + Dashboards</p>
-        <h1 className="text-3xl font-bold">ZotPlanner</h1>
+        <h1 className="text-3xl font-bold">ScholarPlanner</h1>
       </header>
 
       <section className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-lg shadow-slate-900/40">

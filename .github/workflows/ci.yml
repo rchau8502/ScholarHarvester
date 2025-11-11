@@ -39,11 +39,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/zot-planner/package-lock.json
+          cache-dependency-path: apps/scholarplanner/package-lock.json
 
-      - name: Install ZotPlanner deps
+      - name: Install ScholarPlanner deps
         run: npm ci
-        working-directory: apps/zot-planner
+        working-directory: apps/scholarplanner
 
       - name: Ruff + mypy (ScholarHarvester)
         run: |
@@ -59,7 +59,7 @@ jobs:
 
       - name: Next.js lint
         run: npm run lint
-        working-directory: apps/zot-planner
+        working-directory: apps/scholarplanner
 
   test:
     runs-on: ubuntu-latest
@@ -89,11 +89,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/zot-planner/package-lock.json
+          cache-dependency-path: apps/scholarplanner/package-lock.json
 
-      - name: Install ZotPlanner deps
+      - name: Install ScholarPlanner deps
         run: npm ci
-        working-directory: apps/zot-planner
+        working-directory: apps/scholarplanner
 
       - name: Pytest (ScholarHarvester)
         run: poetry run pytest
@@ -105,7 +105,7 @@ jobs:
 
       - name: Vitest
         run: npm test -- --run
-        working-directory: apps/zot-planner
+        working-directory: apps/scholarplanner
 
   build:
     if: github.ref == 'refs/heads/main'
@@ -117,5 +117,5 @@ jobs:
       - name: Build ScholarAPI image
         run: docker build -t scholarapi:latest apps/scholarapi
 
-      - name: Build ZotPlanner image
-        run: docker build -t zot-planner:latest apps/zot-planner
+      - name: Build ScholarPlanner image
+        run: docker build -t scholarplanner:latest apps/scholarplanner

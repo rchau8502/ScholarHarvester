@@ -44,9 +44,9 @@ services:
     ports:
       - '8080:8080'
 
-  zot-planner:
+  scholarplanner:
     build:
-      context: ./apps/zot-planner
+      context: ./apps/scholarplanner
       dockerfile: Dockerfile
     depends_on:
       - scholarapi

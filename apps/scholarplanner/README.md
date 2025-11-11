@@ -1,11 +1,11 @@
-# ZotPlanner
+# ScholarPlanner
 
 Next.js 15 + Tailwind UI and Evidence Drawer for planning. Uses the ScholarAPI for metrics, citations, and provenance.
 
 ## Getting started
 
 ```sh
-cd apps/zot-planner
+cd apps/scholarplanner
 npm install
 npm run dev
 ```

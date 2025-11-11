@@ -13,7 +13,7 @@ poetry run uvicorn scholarapi.main:app --reload
 Environment variables:
 
 - `DATABASE_URL` (Postgres in Docker or a local dev DB)
-- `CORS_ORIGINS` (comma-separated list for ZotPlanner)
+- `CORS_ORIGINS` (comma-separated list for ScholarPlanner)
 - `RATE_LIMIT` (default `60/minute`)
 
 Rate limiting uses SlowAPI with friendly fallback to 429. CORS only allows GET.

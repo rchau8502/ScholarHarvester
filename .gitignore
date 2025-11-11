@@ -6,8 +6,8 @@ __pycache__/
 *.env.local
 .env.local.example
 node_modules/
-apps/zot-planner/.next/
-apps/zot-planner/node_modules/
-apps/zot-planner/.turbo/
-apps/zot-planner/playwright-report/
+apps/scholarplanner/.next/
+apps/scholarplanner/node_modules/
+apps/scholarplanner/.turbo/
+apps/scholarplanner/playwright-report/
 .DS_Store
