@@ -1,0 +1,29 @@
+name: Harvest
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry + deps
+        run: |
+          pip install poetry
+          cd apps/scholarharvester && poetry install --without dev
+
+      - name: Execute harvest
+        env:
+          SUPABASE_DB_DSN: ${{ secrets.SUPABASE_DB_DSN }}
+        run: |
+          cd apps/scholarharvester
+          poetry run python harvest.py --since 2022

@@ -30,20 +30,16 @@ jobs:
         run: poetry install --no-interaction --no-ansi
         working-directory: apps/scholarharvester
 
-      - name: Install ScholarAPI deps
-        run: poetry install --no-interaction --no-ansi
-        working-directory: apps/scholarapi
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/scholarplanner/package-lock.json
+          cache-dependency-path: apps/scholarpath/package-lock.json
 
-      - name: Install ScholarPlanner deps
+      - name: Install ScholarPath deps
         run: npm ci
-        working-directory: apps/scholarplanner
+        working-directory: apps/scholarpath
 
       - name: Ruff + mypy (ScholarHarvester)
         run: |
@@ -51,15 +47,9 @@ jobs:
           poetry run mypy src
         working-directory: apps/scholarharvester
 
-      - name: Ruff + mypy (ScholarAPI)
-        run: |
-          poetry run ruff check .
-          poetry run mypy src
-        working-directory: apps/scholarapi
-
       - name: Next.js lint
         run: npm run lint
-        working-directory: apps/scholarplanner
+        working-directory: apps/scholarpath
 
   test:
     runs-on: ubuntu-latest
@@ -80,32 +70,24 @@ jobs:
         run: poetry install --no-interaction --no-ansi
         working-directory: apps/scholarharvester
 
-      - name: Install ScholarAPI deps
-        run: poetry install --no-interaction --no-ansi
-        working-directory: apps/scholarapi
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/scholarplanner/package-lock.json
+          cache-dependency-path: apps/scholarpath/package-lock.json
 
-      - name: Install ScholarPlanner deps
+      - name: Install ScholarPath deps
         run: npm ci
-        working-directory: apps/scholarplanner
+        working-directory: apps/scholarpath
 
       - name: Pytest (ScholarHarvester)
         run: poetry run pytest
         working-directory: apps/scholarharvester
 
-      - name: Pytest (ScholarAPI)
-        run: poetry run pytest
-        working-directory: apps/scholarapi
-
       - name: Vitest
         run: npm test -- --run
-        working-directory: apps/scholarplanner
+        working-directory: apps/scholarpath
 
   build:
     if: github.ref == 'refs/heads/main'
@@ -114,8 +96,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build ScholarAPI image
-        run: docker build -t scholarapi:latest apps/scholarapi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/scholarpath/package-lock.json
 
-      - name: Build ScholarPlanner image
-        run: docker build -t scholarplanner:latest apps/scholarplanner
+      - name: Install deps
+        run: npm ci
+        working-directory: apps/scholarpath
+
+      - name: Build Next.js app
+        run: npm run build
+        working-directory: apps/scholarpath

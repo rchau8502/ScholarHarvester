@@ -1,16 +1,14 @@
 .PHONY: dev seed test up down
 
 dev:
-	docker compose up -d postgres redis
-	docker compose up --build scholarapi scholarplanner
+	cd apps/scholarpath && npm install && npm run dev
 
 seed:
-	docker compose run --rm scholarharvester poetry run scholarharvester-seed
+	psql $$SUPABASE_DB_DSN -f supabase/schema.sql
 
 test:
-	docker compose run --rm scholarharvester poetry run pytest
-	docker compose run --rm scholarapi poetry run pytest
-	cd apps/scholarplanner && npm run test
+	cd apps/scholarpath && npm run test
+	cd apps/scholarharvester && poetry run pytest
 
 up:
 	docker compose up -d

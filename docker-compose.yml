@@ -1,60 +1,20 @@
-version: '3.9'
+version: "3.9"
 services:
   postgres:
     image: postgres:16
-    restart: unless-stopped
     environment:
+      POSTGRES_DB: scholarstack
       POSTGRES_USER: scholar
       POSTGRES_PASSWORD: scholarpass
-      POSTGRES_DB: scholarstack
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
 
   redis:
     image: redis:7
-    restart: unless-stopped
     ports:
-      - '6379:6379'
-
-  scholarharvester:
-    build:
-      context: ./apps/scholarharvester
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      DATABASE_URL: postgresql+asyncpg://scholar:scholarpass@postgres:5432/scholarstack
-      REDIS_URL: redis://redis:6379
-    command: ["tail", "-f", "/dev/null"]
-
-  scholarapi:
-    build:
-      context: ./apps/scholarapi
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    command: ["poetry", "run", "uvicorn", "scholarapi.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
-    environment:
-      DATABASE_URL: postgresql+asyncpg://scholar:scholarpass@postgres:5432/scholarstack
-      REDIS_URL: redis://redis:6379
-      CORS_ORIGINS: http://localhost:3000
-    ports:
-      - '8080:8080'
-
-  scholarplanner:
-    build:
-      context: ./apps/scholarplanner
-      dockerfile: Dockerfile
-    depends_on:
-      - scholarapi
-    command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0", "--port", "3000"]
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080
-    ports:
-      - '3000:3000'
+      - "6379:6379"
 
 volumes:
   postgres_data:
