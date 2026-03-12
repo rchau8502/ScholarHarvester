@@ -10,4 +10,5 @@ apps/scholarpath/.next/
 apps/scholarpath/node_modules/
 apps/scholarpath/.turbo/
 apps/scholarpath/playwright-report/
+apps/scholarharvester/SOURCE_REGISTRY.robots.json
 .DS_Store

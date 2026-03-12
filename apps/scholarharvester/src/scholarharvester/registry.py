@@ -6,7 +6,7 @@ from typing import Dict, List
 
 import yaml
 
-REGISTRY_PATH = Path(__file__).resolve().parents[1] / "SOURCE_REGISTRY.yaml"
+REGISTRY_PATH = Path(__file__).resolve().parents[2] / "SOURCE_REGISTRY.yaml"
 
 class SourceConfig(Dict):
     pass

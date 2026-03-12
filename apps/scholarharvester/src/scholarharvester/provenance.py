@@ -6,7 +6,7 @@ from scholarharvester.config import config
 
 
 def update_provenance(run_id: int, source: str, files: list[str], warnings: list[str] | None) -> None:
-    path = Path(__file__).resolve().parents[1] / config.provenance_path
+    path = Path(__file__).resolve().parents[2] / config.provenance_path
     entry = f"| {run_id} | {source} | {', '.join(files)} | {', '.join(warnings or [])} |\n"
     path.parent.mkdir(exist_ok=True, parents=True)
     if not path.exists():

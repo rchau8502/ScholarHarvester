@@ -1,69 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supaAnon } from '@/lib/supabase'
+import { getScholarData } from '@/lib/server/dataSource'
+import { queryMetrics } from '@/lib/server/queries'
 
 const MAX_LIMIT = 50
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const params = url.searchParams
-  const client = supaAnon()
+  const data = await getScholarData()
 
   const rawLimit = Number(params.get('limit')) || MAX_LIMIT
   const limit = Math.min(Math.max(rawLimit, 1), MAX_LIMIT)
-  const cursor = params.get('cursor')
 
-  let query = client
-    .from('metric')
-    .select(
-      `
-      id,dataset_id,campus,major,discipline,source_school,school_type,cohort,year,term,stat_name,
-      stat_value_numeric,stat_value_text,unit,percentile,notes,
-      citations:citation (
-        id,title,publisher,year,source_url,interpretation_note
-      )
-    `
-    )
-
-  const eqKeys = ['campus', 'major', 'discipline', 'cohort', 'stat_name', 'source_school', 'school_type', 'year'] as const
-  eqKeys.forEach((key) => {
-    const value = params.get(key as string)
-    if (value) {
-      query = query.eq(key as string, key === 'year' ? Number(value) : value)
-    }
-  })
-
-  const yearMin = params.get('year_min')
-  if (yearMin) {
-    query = query.gte('year', Number(yearMin))
-  }
-  const yearMax = params.get('year_max')
-  if (yearMax) {
-    query = query.lte('year', Number(yearMax))
-  }
-
-  const years = params.getAll('years').map((yr) => Number(yr)).filter((yr) => !Number.isNaN(yr))
-  if (years.length) {
-    query = query.in('year', years)
-  }
-
-  if (cursor) {
-    query = query.gt('id', Number(cursor))
-  }
-
-  query = query.order('id', { ascending: true }).limit(limit + 1)
-
-  const { data, error } = await query
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
-  }
-
-  const rows = data ?? []
-  const items = rows.slice(0, limit).map((row) => ({
-    ...row,
-    stat_value_numeric: row.stat_value_numeric == null ? null : Number(row.stat_value_numeric),
-    citations: row.citations ?? [],
-  }))
-  const nextCursor = rows.length > limit ? String(rows[limit].id) : null
-
-  return NextResponse.json({ items, page_info: { next_cursor: nextCursor } })
+  return NextResponse.json(
+    queryMetrics(data, {
+      campus: params.get('campus'),
+      major: params.get('major'),
+      discipline: params.get('discipline'),
+      cohort: params.get('cohort'),
+      stat_name: params.get('stat_name'),
+      source_school: params.get('source_school'),
+      school_type: params.get('school_type'),
+      year: params.get('year') ? Number(params.get('year')) : null,
+      year_min: params.get('year_min') ? Number(params.get('year_min')) : null,
+      year_max: params.get('year_max') ? Number(params.get('year_max')) : null,
+      years: params
+        .getAll('years')
+        .map((year) => Number(year))
+        .filter((year) => !Number.isNaN(year)),
+      cursor: params.get('cursor') ? Number(params.get('cursor')) : null,
+      limit
+    })
+  )
 }

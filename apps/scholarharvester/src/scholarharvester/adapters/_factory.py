@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from scholarharvester.adapters.utils import (
     AdapterResult,
@@ -26,7 +26,7 @@ def make_sample(
         year=year,
         term=term,
         cohort=cohort,
-        notes=f"Automated sample from {adapter_key} on {datetime.utcnow().date()}.",
+        notes=f"Automated sample from {adapter_key} on {datetime.now(UTC).date()}.",
     )
     metrics: list[MetricPayload] = []
     for stat_name, value in stats.items():
@@ -49,7 +49,7 @@ def make_sample(
             if isinstance(value, (int, float))
             else None,
             stat_value_text=str(value) if not isinstance(value, (int, float)) else None,
-            unit="percent" if stat_name.endswith("rate") else "GPA" if "GPA" in stat_name else "headcount",
+            unit="percent" if stat_name.endswith("rate") else "GPA" if "gpa" in stat_name.lower() else "headcount",
             year=year,
             term=term,
             citations=citations,

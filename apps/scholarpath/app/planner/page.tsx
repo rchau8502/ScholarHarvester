@@ -8,7 +8,7 @@ import type { Metric } from '@/lib/types'
 const cohortOptions = [
   { label: 'Transfer', value: 'transfer' },
   { label: 'Freshman', value: 'freshman' }
-]
+] as const
 
 const campuses = ['UC Irvine', 'UCLA', 'UC San Diego', 'CSU Long Beach', 'CSU Fullerton']
 const transferMajors = ['Mathematics', 'Computer Science']
@@ -38,7 +38,7 @@ function statValue(metrics: Metric[], name: string) {
 
 export default function PlannerPage() {
   const [campus, setCampus] = useState(campuses[0])
-  const [cohort, setCohort] = useState(cohortOptions[0].value)
+  const [cohort, setCohort] = useState<'transfer' | 'freshman'>('transfer')
   const [focus, setFocus] = useState(transferMajors[0])
   const [selectedYears, setSelectedYears] = useState<number[]>([years[0]])
   const [metrics, setMetrics] = useState<Metric[]>([])
@@ -128,7 +128,7 @@ export default function PlannerPage() {
           <select
             value={cohort}
             id="cohort-select"
-            onChange={(e) => setCohort(e.target.value)}
+            onChange={(e) => setCohort(e.target.value as 'transfer' | 'freshman')}
             className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
           >
             {cohortOptions.map((option) => (

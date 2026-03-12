@@ -8,6 +8,7 @@ export interface Citation {
 
 export interface Metric {
   id: number
+  dataset_id?: number
   campus: string
   major?: string | null
   discipline?: string | null
@@ -63,4 +64,47 @@ export interface SourceSchool {
   school_type: string
   city?: string | null
   state?: string | null
+}
+
+export interface ScholarDataBundle {
+  datasets: DatasetEntry[]
+  metrics: Metric[]
+  sourceSchools: SourceSchool[]
+}
+
+export interface IngestRequest {
+  title: string
+  publisher: string
+  source_url: string
+  campus: string
+  cohort: 'transfer' | 'freshman'
+  year: number
+  term: string
+  focus?: string | null
+  raw_text: string
+}
+
+export interface IngestMetricDraft {
+  stat_name: string
+  stat_value_numeric?: number | null
+  stat_value_text?: string | null
+  unit?: string | null
+  notes?: string | null
+}
+
+export interface IngestDraft {
+  dataset: DatasetEntry
+  metrics: Metric[]
+  warnings: string[]
+}
+
+export interface PersistenceResult {
+  mode: 'none' | 'webhook'
+  status: 'not_configured' | 'skipped' | 'persisted' | 'failed'
+  detail: string
+}
+
+export interface IngestResponse {
+  extraction: IngestDraft
+  persistence: PersistenceResult
 }

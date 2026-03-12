@@ -3,10 +3,16 @@ from __future__ import annotations
 import argparse
 import asyncio
 from datetime import datetime
+from pathlib import Path
+import sys
 import time
 from typing import Dict
 
 import httpx
+
+SRC_PATH = Path(__file__).resolve().parent / "src"
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
 
 from scholarharvester.adapters import ADAPTERS
 from scholarharvester.adapters.utils import AdapterResult
