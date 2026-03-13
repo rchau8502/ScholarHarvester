@@ -5,16 +5,31 @@ import { useSearchParams } from 'next/navigation'
 import EvidenceDrawer from '@/components/EvidenceDrawer'
 import { getMetrics } from '@/lib/api'
 import type { Metric } from '@/lib/types'
-import { COMMUNITY_COLLEGES, HIGH_SCHOOLS } from '@/lib/server/sourceSchoolConfig'
+import {
+  COMMUNITY_COLLEGES,
+  FRESHMAN_DISCIPLINES,
+  HIGH_SCHOOLS,
+  TARGET_CAMPUSES,
+  TRANSFER_MAJORS
+} from '@/lib/catalog'
 
 const cohortOptions = [
   { label: 'Transfer', value: 'transfer' },
   { label: 'Freshman', value: 'freshman' }
 ] as const
 
-const campuses = ['UC Irvine', 'UCLA', 'UC San Diego', 'CSU Long Beach', 'CSU Fullerton']
-const transferMajors = ['Mathematics', 'Computer Science']
-const freshmanDisciplines = ['Physical Sciences', 'Engineering', 'Social Sciences']
+const campuses: string[] = TARGET_CAMPUSES.map((campus) => campus.name)
+const campusGroups = Object.entries(
+  TARGET_CAMPUSES.reduce<Record<string, string[]>>((groups, campus) => {
+    if (!groups[campus.segment]) {
+      groups[campus.segment] = []
+    }
+    groups[campus.segment].push(campus.name)
+    return groups
+  }, {})
+)
+const transferMajors: string[] = [...TRANSFER_MAJORS]
+const freshmanDisciplines: string[] = [...FRESHMAN_DISCIPLINES]
 const years = [2024, 2023, 2022]
 
 function KPI({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
@@ -46,7 +61,7 @@ function PlannerPageContent() {
       ? (searchParams.get('cohort') as 'transfer' | 'freshman')
       : 'transfer'
   const [cohort, setCohort] = useState<'transfer' | 'freshman'>(initialCohort)
-  const [focus, setFocus] = useState(transferMajors[0])
+  const [focus, setFocus] = useState<string>(transferMajors[0])
   const [selectedYears, setSelectedYears] = useState<number[]>([years[0]])
   const [sourceSchool, setSourceSchool] = useState(searchParams.get('sourceSchool') ?? '')
   const [schoolType, setSchoolType] = useState(searchParams.get('schoolType') ?? '')
@@ -151,8 +166,12 @@ function PlannerPageContent() {
             onChange={(e) => setCampus(e.target.value)}
             className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
           >
-            {campuses.map((item) => (
-              <option key={item}>{item}</option>
+            {campusGroups.map(([segment, items]) => (
+              <optgroup key={segment} label={segment}>
+                {items.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

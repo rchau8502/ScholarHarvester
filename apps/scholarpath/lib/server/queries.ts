@@ -169,7 +169,9 @@ export function querySourceSchools(
   return data.sourceSchools
     .filter((school) => {
       if (params.type && school.school_type !== params.type) return false
-      if (search && !school.name.toLowerCase().includes(search)) return false
+      if (search && !`${school.name} ${school.city ?? ''} ${school.state ?? ''}`.toLowerCase().includes(search)) {
+        return false
+      }
       return true
     })
     .slice(0, 25)

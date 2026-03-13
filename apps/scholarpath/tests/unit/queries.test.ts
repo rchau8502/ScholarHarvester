@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { TARGET_CAMPUSES, TRANSFER_MAJORS } from '@/lib/catalog'
 import { LOCAL_SCHOLAR_DATA } from '@/lib/server/localData'
 import { queryMetrics, queryProfile, querySourceSchools } from '@/lib/server/queries'
 
@@ -36,5 +37,10 @@ describe('server queries', () => {
 
     expect(schools.length).toBeGreaterThan(0)
     expect(schools.every((school) => school.school_type === 'CommunityCollege')).toBe(true)
+  })
+
+  test('ships a broader target campus and major catalog', () => {
+    expect(TARGET_CAMPUSES.length).toBeGreaterThan(25)
+    expect(TRANSFER_MAJORS.length).toBeGreaterThan(6)
   })
 })
