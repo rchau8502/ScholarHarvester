@@ -109,6 +109,24 @@ type TermPlan = {
   courses: string[]
 }
 
+type RequirementItem = {
+  title: string
+  status: 'done' | 'in_progress' | 'needs_attention'
+  detail: string
+}
+
+type PlannerReadout = {
+  goal: string
+  readinessLabel: string
+  readinessTone: string
+  readinessSummary: string
+  competitivenessSummary: string
+  requirementItems: RequirementItem[]
+  acceptedProfile: string[]
+  nextTermPlan: string[]
+  applicationStrategy: string[]
+}
+
 const focusCourseTemplates: Record<string, string[]> = {
   'Computer Science': ['Calculus I', 'Calculus II', 'Data Structures', 'Discrete Math', 'Programming sequence'],
   Engineering: ['Calculus I', 'Calculus II', 'Physics', 'Chemistry', 'Intro Engineering'],
@@ -210,6 +228,244 @@ function buildDefaultSchedule(input: {
     name,
     courses: combined.filter((_, courseIndex) => courseIndex % termNames.length === index).slice(0, 4)
   }))
+}
+
+function statNumber(metrics: Metric[], name: string) {
+  const match = metrics.find((metric) => metric.stat_name === name)
+  return typeof match?.stat_value_numeric === 'number' ? match.stat_value_numeric : null
+}
+
+function progressScore(value: 'early' | 'in_progress' | 'mostly_complete' | 'complete') {
+  switch (value) {
+    case 'complete':
+      return 3
+    case 'mostly_complete':
+      return 2
+    case 'in_progress':
+      return 1
+    default:
+      return 0
+  }
+}
+
+function buildPlannerReadout(input: {
+  cohort: 'transfer' | 'freshman'
+  campus: string
+  focus: string
+  sourceSchool: string
+  currentGpa: string
+  targetGpa: string
+  apCount: string
+  extracurricularStrength: 'developing' | 'solid' | 'strong' | 'exceptional'
+  transferRequirementProgress: 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+  majorPreparationProgress: 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+  metrics: Metric[]
+  scheduleTerms: TermPlan[]
+  plannedCourses: string
+}): PlannerReadout {
+  const gpaP25 = statNumber(input.metrics, 'gpa_p25')
+  const gpaP50 = statNumber(input.metrics, 'gpa_p50')
+  const gpaP75 = statNumber(input.metrics, 'gpa_p75')
+  const admitRate = statNumber(input.metrics, 'admit_rate')
+  const currentGpaValue = input.currentGpa ? Number(input.currentGpa) : null
+  const targetGpaValue = input.targetGpa ? Number(input.targetGpa) : null
+  const apCountValue = input.apCount ? Number(input.apCount) : null
+  const extracurricularScore =
+    input.extracurricularStrength === 'exceptional'
+      ? 3
+      : input.extracurricularStrength === 'strong'
+        ? 2
+        : input.extracurricularStrength === 'solid'
+          ? 1
+          : 0
+
+  let readinessPoints = 0
+  if (currentGpaValue != null && gpaP50 != null) {
+    if (currentGpaValue >= (gpaP75 ?? gpaP50 + 0.2)) readinessPoints += 3
+    else if (currentGpaValue >= gpaP50) readinessPoints += 2
+    else if (gpaP25 != null && currentGpaValue >= gpaP25) readinessPoints += 1
+  }
+  readinessPoints += extracurricularScore
+  if (input.cohort === 'transfer') {
+    readinessPoints += progressScore(input.transferRequirementProgress)
+    readinessPoints += progressScore(input.majorPreparationProgress)
+  } else if (apCountValue != null) {
+    readinessPoints += apCountValue >= 8 ? 3 : apCountValue >= 5 ? 2 : apCountValue >= 3 ? 1 : 0
+  }
+
+  const readiness =
+    readinessPoints >= 9
+      ? {
+          label: 'Strong position',
+          tone: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+        }
+      : readinessPoints >= 6
+        ? {
+            label: 'On track, but still needs tightening',
+            tone: 'border-sky-500/40 bg-sky-500/10 text-sky-200'
+          }
+        : readinessPoints >= 3
+          ? {
+              label: 'Possible, but gaps are still visible',
+              tone: 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+            }
+          : {
+              label: 'Not yet competitive enough',
+              tone: 'border-rose-500/40 bg-rose-500/10 text-rose-200'
+            }
+
+  const requirementItems: RequirementItem[] =
+    input.cohort === 'transfer'
+      ? [
+          {
+            title: 'Transfer admission requirements',
+            status:
+              input.transferRequirementProgress === 'complete'
+                ? 'done'
+                : input.transferRequirementProgress === 'mostly_complete' || input.transferRequirementProgress === 'in_progress'
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail: `Current status: ${input.transferRequirementProgress.replaceAll('_', ' ')}. Finish the transfer pattern and verify articulation before applying.`
+          },
+          {
+            title: `${input.focus} prerequisites`,
+            status:
+              input.majorPreparationProgress === 'complete'
+                ? 'done'
+                : input.majorPreparationProgress === 'mostly_complete' || input.majorPreparationProgress === 'in_progress'
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail: `Current status: ${input.majorPreparationProgress.replaceAll('_', ' ')}. Missing major prep is usually the biggest reason a transfer file falls behind.`
+          },
+          {
+            title: 'GPA against past admits',
+            status:
+              currentGpaValue != null && gpaP50 != null && currentGpaValue >= gpaP50
+                ? 'done'
+                : currentGpaValue != null && gpaP25 != null && currentGpaValue >= gpaP25
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail:
+              currentGpaValue != null && gpaP50 != null
+                ? `Your GPA is ${currentGpaValue.toFixed(2)}. Past admits here were around ${gpaP25?.toFixed(2) ?? '--'} to ${gpaP75?.toFixed(2) ?? '--'}, with a middle point near ${gpaP50.toFixed(2)}.`
+                : 'Add your GPA to compare yourself against the past cohort.'
+          },
+          {
+            title: 'Field-relevant activity and application story',
+            status:
+              input.extracurricularStrength === 'strong' || input.extracurricularStrength === 'exceptional'
+                ? 'done'
+                : input.extracurricularStrength === 'solid'
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail: 'Competitive transfer applicants usually pair completed coursework with a clear reason for the major, projects, leadership, work, research, or service.'
+          }
+        ]
+      : [
+          {
+            title: 'GPA and grade trend',
+            status:
+              currentGpaValue != null && gpaP50 != null && currentGpaValue >= gpaP50
+                ? 'done'
+                : currentGpaValue != null && gpaP25 != null && currentGpaValue >= gpaP25
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail:
+              currentGpaValue != null && gpaP50 != null
+                ? `Your GPA is ${currentGpaValue.toFixed(2)}. Past admits here clustered around ${gpaP25?.toFixed(2) ?? '--'} to ${gpaP75?.toFixed(2) ?? '--'}, with a midpoint near ${gpaP50.toFixed(2)}.`
+                : 'Add your GPA so the planner can compare you to past admits.'
+          },
+          {
+            title: 'AP, IB, honors, or dual-enrollment rigor',
+            status:
+              apCountValue != null && apCountValue >= 6 ? 'done' : apCountValue != null && apCountValue >= 3 ? 'in_progress' : 'needs_attention',
+            detail:
+              apCountValue != null
+                ? `You listed ${apCountValue} advanced courses. Stronger freshman files usually show sustained rigor, not just one or two advanced classes.`
+                : 'Add the number of advanced courses you have completed or planned.'
+          },
+          {
+            title: `${input.focus} preparation`,
+            status: input.plannedCourses.trim() ? 'in_progress' : 'needs_attention',
+            detail: `Your course list should clearly support ${input.focus}, especially if you are aiming for a selective destination.`
+          },
+          {
+            title: 'Extracurricular impact and story',
+            status:
+              input.extracurricularStrength === 'strong' || input.extracurricularStrength === 'exceptional'
+                ? 'done'
+                : input.extracurricularStrength === 'solid'
+                  ? 'in_progress'
+                  : 'needs_attention',
+            detail: 'Competitive freshman applicants usually show depth, leadership, initiative, or impact, not just club membership.'
+          }
+        ]
+
+  const acceptedProfile = [
+    gpaP50 != null
+      ? `Past admits in this view were roughly around a ${gpaP25?.toFixed(2) ?? '--'} to ${gpaP75?.toFixed(2) ?? '--'} GPA band, with the middle of the cohort near ${gpaP50.toFixed(2)}.`
+      : 'There is not enough GPA data loaded yet to benchmark this path.',
+    admitRate != null
+      ? `The visible admit rate is ${admitRate.toFixed(1)}%, so this path should be treated as ${admitRate < 25 ? 'highly selective' : admitRate < 45 ? 'competitive' : 'more attainable but still not automatic'}.`
+      : 'Admit rate is not available for this combination yet.',
+    input.cohort === 'transfer'
+      ? 'The strongest transfer applicants usually complete both transfer patterns and major prerequisites before filing the application.'
+      : 'The strongest freshman applicants usually combine grades, rigor, and a credible story about why they fit the intended field.',
+    input.sourceSchool
+      ? `Because you selected ${input.sourceSchool}, the readout is grounded in that source-school pathway instead of a statewide average.`
+      : 'Because you did not select a source school, this readout reflects the broader bundled cohort rather than your exact pipeline.'
+  ]
+
+  const nextTermPlan =
+    input.scheduleTerms.slice(0, 2).flatMap((term) =>
+      term.courses.length
+        ? [`${term.name}: ${term.courses.join(', ')}`]
+        : [`${term.name}: add the most important missing prerequisites and one writing or quantitative support course.`]
+    )
+
+  const applicationStrategy = [
+    input.cohort === 'transfer'
+      ? `Your goal is to transfer from ${input.sourceSchool || 'your current college'} to ${input.campus} for ${input.focus}. Treat prerequisite completion as non-negotiable.`
+      : `Your goal is to apply from ${input.sourceSchool || 'your current high school'} to ${input.campus} for ${input.focus}. Treat GPA trend, rigor, and activities as one combined story.`,
+    readiness.label === 'Strong position'
+      ? 'You can keep this destination as a serious target, but you should still apply broadly because even good-looking files are not automatic admits.'
+      : readiness.label === 'On track, but still needs tightening'
+        ? 'Keep this destination in play, but tighten your next two terms and build a wider school list.'
+        : 'Treat this destination as a reach until the missing pieces are improved, and build a stronger backup list now.',
+    targetGpaValue != null
+      ? `Use your goal GPA of ${targetGpaValue.toFixed(2)} as a planning floor, not just a wish.`
+      : 'Set a target GPA so the planner can show whether your current path is enough or still short.',
+    input.cohort === 'transfer'
+      ? 'Before applying, verify official articulation and major prep with the destination school and the appropriate transfer planning tools.'
+      : 'Before applying, verify the destination school’s freshman review factors, especially course rigor expectations and testing or portfolio rules if relevant.'
+  ]
+
+  return {
+    goal:
+      input.cohort === 'transfer'
+        ? `Transfer from ${input.sourceSchool || 'your current college'} to ${input.campus} for ${input.focus}`
+        : `Apply from ${input.sourceSchool || 'your current high school'} to ${input.campus} for ${input.focus}`,
+    readinessLabel: readiness.label,
+    readinessTone: readiness.tone,
+    readinessSummary:
+      input.cohort === 'transfer'
+        ? 'This readout is prioritizing your GPA, transfer completion, major prep, and activity story rather than just showing a raw admit rate.'
+        : 'This readout is prioritizing GPA, academic rigor, and extracurricular depth rather than only showing historical metrics.',
+    competitivenessSummary:
+      currentGpaValue != null && gpaP50 != null
+        ? currentGpaValue >= (gpaP75 ?? gpaP50 + 0.2)
+          ? 'Right now your GPA looks closer to the upper end of the past cohort. If the rest of your file is complete, you look more competitive than the median applicant in this view.'
+          : currentGpaValue >= gpaP50
+            ? 'Right now your GPA looks around or above the middle of the past cohort. You still need the rest of the file to be clean and complete.'
+            : gpaP25 != null && currentGpaValue >= gpaP25
+              ? 'Right now your GPA looks closer to the lower end of the visible admit band. This is still possible, but you need stronger execution elsewhere.'
+              : 'Right now your GPA sits below the visible admit band, so this path looks weak unless you improve the academics or broaden your school list.'
+        : 'Add your GPA to compare your current position against the past admit band.',
+    requirementItems,
+    acceptedProfile,
+    nextTermPlan,
+    applicationStrategy
+  }
 }
 
 function PlannerPageContent() {
@@ -510,6 +766,39 @@ function PlannerPageContent() {
   }
 
   const completedTaskCount = planTasks.filter((task) => task.done).length
+  const plannerReadout = useMemo(
+    () =>
+      buildPlannerReadout({
+        cohort,
+        campus,
+        focus,
+        sourceSchool,
+        currentGpa,
+        targetGpa,
+        apCount,
+        extracurricularStrength,
+        transferRequirementProgress,
+        majorPreparationProgress,
+        metrics,
+        scheduleTerms,
+        plannedCourses
+      }),
+    [
+      cohort,
+      campus,
+      focus,
+      sourceSchool,
+      currentGpa,
+      targetGpa,
+      apCount,
+      extracurricularStrength,
+      transferRequirementProgress,
+      majorPreparationProgress,
+      metrics,
+      scheduleTerms,
+      plannedCourses
+    ]
+  )
   const destinationLabel = cohort === 'transfer' ? 'Transfer to' : 'Apply to'
   const applicantTypeLabel = cohort === 'transfer' ? 'Plan type' : 'Applicant type'
   const focusLabel = cohort === 'transfer' ? 'Transfer major' : 'Intended area of study'
@@ -788,6 +1077,72 @@ function PlannerPageContent() {
         ))}
       </section>
 
+      <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-slate-400">Decision readout</p>
+            <h2 className="text-2xl font-semibold">{plannerReadout.goal}</h2>
+            <p className="mt-2 max-w-3xl text-sm text-slate-400">{plannerReadout.readinessSummary}</p>
+          </div>
+          <div className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${plannerReadout.readinessTone}`}>
+            {plannerReadout.readinessLabel}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+            <p className="text-sm font-semibold text-fuchsia-300">How competitive you are</p>
+            <p className="mt-2 text-sm text-slate-200">{plannerReadout.competitivenessSummary}</p>
+          </div>
+          <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+            <p className="text-sm font-semibold text-cyan-300">What accepted applicants usually look like</p>
+            <AdviceList items={plannerReadout.acceptedProfile} />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr,1fr]">
+          <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+            <p className="text-sm font-semibold text-amber-300">What you still need</p>
+            <div className="mt-3 space-y-3">
+              {plannerReadout.requirementItems.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-slate-800 px-3 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-100">{item.title}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        item.status === 'done'
+                          ? 'bg-emerald-500/15 text-emerald-200'
+                          : item.status === 'in_progress'
+                            ? 'bg-amber-500/15 text-amber-200'
+                            : 'bg-rose-500/15 text-rose-200'
+                      }`}
+                    >
+                      {item.status === 'done'
+                        ? 'Done or strong'
+                        : item.status === 'in_progress'
+                          ? 'In progress'
+                          : 'Needs attention'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-300">{item.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+              <p className="text-sm font-semibold text-sky-300">Your next 2 terms</p>
+              <AdviceList items={plannerReadout.nextTermPlan} />
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+              <p className="text-sm font-semibold text-emerald-300">Application strategy</p>
+              <AdviceList items={plannerReadout.applicationStrategy} />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.1fr,1.4fr]">
         <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -951,10 +1306,10 @@ function PlannerPageContent() {
       <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm text-slate-400">AI Help</p>
-            <h2 className="text-2xl font-semibold">Planner readout</h2>
+            <p className="text-sm text-slate-400">AI coach</p>
+            <h2 className="text-2xl font-semibold">Deeper explanation</h2>
             <p className="mt-1 text-sm text-slate-400">
-              Uses the visible metrics only. It does not replace official admissions guidance.
+              Use this after the decision readout if you want more narrative guidance. It still does not replace official admissions guidance.
             </p>
           </div>
           <button
@@ -971,7 +1326,7 @@ function PlannerPageContent() {
 
         {!advisor && !advisorLoading && !advisorError && (
           <p className="mt-4 text-sm text-slate-400">
-            Generate a grounded summary for this campus, program, and source-school combination.
+            Generate a grounded explanation for this destination, major, and current-school path.
           </p>
         )}
 
