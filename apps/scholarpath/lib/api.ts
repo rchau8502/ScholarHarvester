@@ -1,5 +1,5 @@
 import { buildQuery } from './buildQuery'
-import type { MetricPage, ProfileResponse, ProvenanceEntry, SourceSchool } from './types'
+import type { AdvisorRequest, AdvisorResponse, MetricPage, ProfileResponse, ProvenanceEntry, SourceSchool } from './types'
 
 async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init)
@@ -31,4 +31,14 @@ export function searchSourceSchools(query: string, type?: string): Promise<Sourc
   }
   const q = buildQuery(params)
   return fetchJSON(`/api/source-schools${q}`)
+}
+
+export function getAdvisor(input: AdvisorRequest): Promise<AdvisorResponse> {
+  return fetchJSON('/api/advisor', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(input)
+  })
 }

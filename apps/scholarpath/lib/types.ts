@@ -108,3 +108,21 @@ export interface IngestResponse {
   extraction: IngestDraft
   persistence: PersistenceResult
 }
+
+export interface AdvisorRequest {
+  campus: string
+  cohort: 'transfer' | 'freshman'
+  focus: string
+  sourceSchool?: string | null
+  schoolType?: string | null
+  years: number[]
+  metrics: Metric[]
+}
+
+export interface AdvisorResponse {
+  summary: string
+  strengths: string[]
+  cautions: string[]
+  next_steps: string[]
+  disclaimer: string
+}

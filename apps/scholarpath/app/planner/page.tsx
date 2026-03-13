@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import EvidenceDrawer from '@/components/EvidenceDrawer'
-import { getMetrics } from '@/lib/api'
-import type { Metric } from '@/lib/types'
+import { getAdvisor, getMetrics } from '@/lib/api'
+import type { AdvisorResponse, Metric } from '@/lib/types'
 import {
   COMMUNITY_COLLEGES,
   FRESHMAN_DISCIPLINES,
@@ -53,6 +53,19 @@ function statValue(metrics: Metric[], name: string) {
   return match.stat_value_text ?? '--'
 }
 
+function AdviceList({ items }: { items: string[] }) {
+  if (!items.length) return null
+  return (
+    <ul className="mt-2 space-y-2 text-sm text-slate-300">
+      {items.map((item) => (
+        <li key={item} className="rounded-2xl border border-slate-800 bg-slate-950 px-3 py-2">
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function PlannerPageContent() {
   const searchParams = useSearchParams()
   const [campus, setCampus] = useState(campuses[0])
@@ -68,6 +81,9 @@ function PlannerPageContent() {
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [loading, setLoading] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [advisor, setAdvisor] = useState<AdvisorResponse | null>(null)
+  const [advisorLoading, setAdvisorLoading] = useState(false)
+  const [advisorError, setAdvisorError] = useState<string | null>(null)
 
   useEffect(() => {
     const campusParam = searchParams.get('campus')
@@ -102,6 +118,8 @@ function PlannerPageContent() {
     const abort = new AbortController()
     async function fetch() {
       setLoading(true)
+      setAdvisor(null)
+      setAdvisorError(null)
       try {
         const params: Record<string, unknown> = {
           campus,
@@ -147,6 +165,28 @@ function PlannerPageContent() {
     ],
     []
   )
+
+  async function handleAdvisor() {
+    setAdvisorLoading(true)
+    setAdvisorError(null)
+    try {
+      const advice = await getAdvisor({
+        campus,
+        cohort,
+        focus,
+        sourceSchool: sourceSchool || null,
+        schoolType: schoolType || null,
+        years: selectedYears,
+        metrics
+      })
+      setAdvisor(advice)
+    } catch (error) {
+      console.error(error)
+      setAdvisorError(error instanceof Error ? error.message : 'Unable to load AI guidance right now')
+    } finally {
+      setAdvisorLoading(false)
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
@@ -290,6 +330,58 @@ function PlannerPageContent() {
           {loading && 'Loading metrics…'}
           {!loading && metrics.length === 0 && 'No metrics found for that combination yet.'}
         </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-slate-400">AI Help</p>
+            <h2 className="text-2xl font-semibold">Planner readout</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Uses the visible metrics only. It does not replace official admissions guidance.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAdvisor}
+            disabled={advisorLoading || loading || metrics.length === 0}
+            className="rounded-2xl border border-amber-400 px-4 py-2 font-semibold text-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {advisorLoading ? 'Analyzing…' : 'Ask AI'}
+          </button>
+        </div>
+
+        {advisorError && <p className="mt-4 text-sm text-rose-400">{advisorError}</p>}
+
+        {!advisor && !advisorLoading && !advisorError && (
+          <p className="mt-4 text-sm text-slate-400">
+            Generate a grounded summary for this campus, program, and source-school combination.
+          </p>
+        )}
+
+        {advisor && (
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+              <p className="text-sm text-slate-400">Summary</p>
+              <p className="mt-2 text-base text-white">{advisor.summary}</p>
+              <p className="mt-3 text-xs text-slate-500">{advisor.disclaimer}</p>
+            </div>
+            <div className="grid gap-4">
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-emerald-300">Strengths</p>
+                <AdviceList items={advisor.strengths} />
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-amber-300">Cautions</p>
+                <AdviceList items={advisor.cautions} />
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-sky-300">Next steps</p>
+                <AdviceList items={advisor.next_steps} />
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <EvidenceDrawer
