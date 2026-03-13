@@ -20,7 +20,18 @@ export const TRANSFER_MAJORS = [
   'Economics',
   'Psychology',
   'Mechanical Engineering',
-  'Nursing'
+  'Nursing',
+  'Data Science',
+  'Public Health',
+  'Political Science',
+  'Sociology',
+  'Chemistry',
+  'English',
+  'Electrical Engineering',
+  'Civil Engineering',
+  'History',
+  'Communications',
+  'Kinesiology'
 ] as const
 
 export const FRESHMAN_DISCIPLINES = [
@@ -31,7 +42,16 @@ export const FRESHMAN_DISCIPLINES = [
   'Business',
   'Economics',
   'Psychology',
-  'Social Sciences'
+  'Social Sciences',
+  'Data Science',
+  'Public Health',
+  'Political Science',
+  'Humanities',
+  'Arts and Media',
+  'Mathematics',
+  'Nursing',
+  'Education',
+  'Architecture'
 ] as const
 
 export const TARGET_CAMPUSES: CampusCatalogEntry[] = [
@@ -56,20 +76,50 @@ export const TARGET_CAMPUSES: CampusCatalogEntry[] = [
   { name: 'Cal State LA', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 18 },
   { name: 'Cal State San Bernardino', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 19 },
   { name: 'Cal State San Marcos', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 20 },
-  { name: 'Stanford University', segment: 'Private', sourceBase: 'https://facts.stanford.edu', offset: 21 },
-  { name: 'University of Southern California', segment: 'Private', sourceBase: 'https://oir.usc.edu', offset: 22 },
-  { name: 'Santa Clara University', segment: 'Private', sourceBase: 'https://www.scu.edu', offset: 23 },
-  { name: 'Chapman University', segment: 'Private', sourceBase: 'https://www.chapman.edu', offset: 24 },
-  { name: 'Pepperdine University', segment: 'Private', sourceBase: 'https://www.pepperdine.edu', offset: 25 },
-  { name: 'Loyola Marymount University', segment: 'Private', sourceBase: 'https://www.lmu.edu', offset: 26 },
-  { name: 'University of San Diego', segment: 'Private', sourceBase: 'https://www.sandiego.edu', offset: 27 },
-  { name: 'University of the Pacific', segment: 'Private', sourceBase: 'https://www.pacific.edu', offset: 28 },
-  { name: 'Mt. San Antonio College', segment: 'CommunityCollege', sourceBase: 'https://www.mtsac.edu', offset: 29 },
-  { name: 'Santa Monica College', segment: 'CommunityCollege', sourceBase: 'https://www.smc.edu', offset: 30 },
-  { name: 'De Anza College', segment: 'CommunityCollege', sourceBase: 'https://www.deanza.edu', offset: 31 },
-  { name: 'Pasadena City College', segment: 'CommunityCollege', sourceBase: 'https://pasadena.edu', offset: 32 },
-  { name: 'Orange Coast College', segment: 'CommunityCollege', sourceBase: 'https://orangecoastcollege.edu', offset: 33 },
-  { name: 'El Camino College', segment: 'CommunityCollege', sourceBase: 'https://www.elcamino.edu', offset: 34 }
+  { name: 'Sonoma State University', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 21 },
+  { name: 'Cal State East Bay', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 22 },
+  { name: 'Cal State Sacramento', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 23 },
+  { name: 'Fresno State', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 24 },
+  { name: 'Cal State Channel Islands', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 25 },
+  { name: 'Cal State Dominguez Hills', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 26 },
+  { name: 'Cal State Monterey Bay', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 27 },
+  { name: 'Cal State Stanislaus', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 28 },
+  { name: 'Humboldt', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 29 },
+  { name: 'Cal State Bakersfield', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 30 },
+  { name: 'Chico State', segment: 'CSU', sourceBase: 'https://www.calstate.edu/data-center', offset: 31 },
+  { name: 'Stanford University', segment: 'Private', sourceBase: 'https://facts.stanford.edu', offset: 32 },
+  { name: 'University of Southern California', segment: 'Private', sourceBase: 'https://oir.usc.edu', offset: 33 },
+  { name: 'Santa Clara University', segment: 'Private', sourceBase: 'https://www.scu.edu', offset: 34 },
+  { name: 'Chapman University', segment: 'Private', sourceBase: 'https://www.chapman.edu', offset: 35 },
+  { name: 'Pepperdine University', segment: 'Private', sourceBase: 'https://www.pepperdine.edu', offset: 36 },
+  { name: 'Loyola Marymount University', segment: 'Private', sourceBase: 'https://www.lmu.edu', offset: 37 },
+  { name: 'University of San Diego', segment: 'Private', sourceBase: 'https://www.sandiego.edu', offset: 38 },
+  { name: 'University of the Pacific', segment: 'Private', sourceBase: 'https://www.pacific.edu', offset: 39 },
+  { name: 'Occidental College', segment: 'Private', sourceBase: 'https://www.oxy.edu', offset: 40 },
+  { name: 'University of San Francisco', segment: 'Private', sourceBase: 'https://www.usfca.edu', offset: 41 },
+  { name: 'California Lutheran University', segment: 'Private', sourceBase: 'https://www.callutheran.edu', offset: 42 },
+  { name: 'University of Redlands', segment: 'Private', sourceBase: 'https://www.redlands.edu', offset: 43 },
+  { name: 'Claremont McKenna College', segment: 'Private', sourceBase: 'https://www.cmc.edu', offset: 44 },
+  { name: 'Pomona College', segment: 'Private', sourceBase: 'https://www.pomona.edu', offset: 45 },
+  { name: 'University of La Verne', segment: 'Private', sourceBase: 'https://laverne.edu', offset: 46 },
+  { name: 'Biola University', segment: 'Private', sourceBase: 'https://www.biola.edu', offset: 47 },
+  { name: 'California Baptist University', segment: 'Private', sourceBase: 'https://calbaptist.edu', offset: 48 },
+  { name: 'Mt. San Antonio College', segment: 'CommunityCollege', sourceBase: 'https://www.mtsac.edu', offset: 49 },
+  { name: 'Santa Monica College', segment: 'CommunityCollege', sourceBase: 'https://www.smc.edu', offset: 50 },
+  { name: 'De Anza College', segment: 'CommunityCollege', sourceBase: 'https://www.deanza.edu', offset: 51 },
+  { name: 'Pasadena City College', segment: 'CommunityCollege', sourceBase: 'https://pasadena.edu', offset: 52 },
+  { name: 'Orange Coast College', segment: 'CommunityCollege', sourceBase: 'https://orangecoastcollege.edu', offset: 53 },
+  { name: 'El Camino College', segment: 'CommunityCollege', sourceBase: 'https://www.elcamino.edu', offset: 54 },
+  { name: 'Foothill College', segment: 'CommunityCollege', sourceBase: 'https://foothill.edu', offset: 55 },
+  { name: 'Riverside City College', segment: 'CommunityCollege', sourceBase: 'https://www.rcc.edu', offset: 56 },
+  { name: 'Long Beach City College', segment: 'CommunityCollege', sourceBase: 'https://www.lbcc.edu', offset: 57 },
+  { name: 'Fullerton College', segment: 'CommunityCollege', sourceBase: 'https://www.fullcoll.edu', offset: 58 },
+  { name: 'Diablo Valley College', segment: 'CommunityCollege', sourceBase: 'https://www.dvc.edu', offset: 59 },
+  { name: 'Cerritos College', segment: 'CommunityCollege', sourceBase: 'https://www.cerritos.edu', offset: 60 },
+  { name: 'Irvine Valley College', segment: 'CommunityCollege', sourceBase: 'https://www.ivc.edu', offset: 61 },
+  { name: 'Saddleback College', segment: 'CommunityCollege', sourceBase: 'https://www.saddleback.edu', offset: 62 },
+  { name: 'Glendale Community College', segment: 'CommunityCollege', sourceBase: 'https://www.glendale.edu', offset: 63 },
+  { name: 'San Diego Mesa College', segment: 'CommunityCollege', sourceBase: 'https://www.sdmesa.edu', offset: 64 }
 ]
 
 export const HIGH_SCHOOLS = [
@@ -80,7 +130,17 @@ export const HIGH_SCHOOLS = [
   'Troy High School',
   'Mission San Jose High School',
   'Torrey Pines High School',
-  'Palo Alto High School'
+  'Palo Alto High School',
+  'Gunn High School',
+  'Monta Vista High School',
+  'Mira Costa High School',
+  'Dougherty Valley High School',
+  'Homestead High School',
+  'Cupertino High School',
+  'Saratoga High School',
+  'Lynbrook High School',
+  'Northwood High School',
+  'Diamond Bar High School'
 ] as const
 
 export const COMMUNITY_COLLEGES = [
@@ -91,7 +151,15 @@ export const COMMUNITY_COLLEGES = [
   'De Anza College',
   'El Camino College',
   'Foothill College',
-  'Riverside City College'
+  'Riverside City College',
+  'Long Beach City College',
+  'Fullerton College',
+  'Diablo Valley College',
+  'Cerritos College',
+  'Irvine Valley College',
+  'Saddleback College',
+  'Glendale Community College',
+  'San Diego Mesa College'
 ] as const
 
 export const SOURCE_SCHOOLS: SourceSchoolCatalogEntry[] = [
@@ -103,6 +171,16 @@ export const SOURCE_SCHOOLS: SourceSchoolCatalogEntry[] = [
   { name: 'Mission San Jose High School', school_type: 'HighSchool', city: 'Fremont', state: 'CA' },
   { name: 'Torrey Pines High School', school_type: 'HighSchool', city: 'San Diego', state: 'CA' },
   { name: 'Palo Alto High School', school_type: 'HighSchool', city: 'Palo Alto', state: 'CA' },
+  { name: 'Gunn High School', school_type: 'HighSchool', city: 'Palo Alto', state: 'CA' },
+  { name: 'Monta Vista High School', school_type: 'HighSchool', city: 'Cupertino', state: 'CA' },
+  { name: 'Mira Costa High School', school_type: 'HighSchool', city: 'Manhattan Beach', state: 'CA' },
+  { name: 'Dougherty Valley High School', school_type: 'HighSchool', city: 'San Ramon', state: 'CA' },
+  { name: 'Homestead High School', school_type: 'HighSchool', city: 'Cupertino', state: 'CA' },
+  { name: 'Cupertino High School', school_type: 'HighSchool', city: 'Cupertino', state: 'CA' },
+  { name: 'Saratoga High School', school_type: 'HighSchool', city: 'Saratoga', state: 'CA' },
+  { name: 'Lynbrook High School', school_type: 'HighSchool', city: 'San Jose', state: 'CA' },
+  { name: 'Northwood High School', school_type: 'HighSchool', city: 'Irvine', state: 'CA' },
+  { name: 'Diamond Bar High School', school_type: 'HighSchool', city: 'Diamond Bar', state: 'CA' },
   { name: 'Mt. San Antonio College', school_type: 'CommunityCollege', city: 'Walnut', state: 'CA' },
   { name: 'Santa Monica College', school_type: 'CommunityCollege', city: 'Santa Monica', state: 'CA' },
   { name: 'Orange Coast College', school_type: 'CommunityCollege', city: 'Costa Mesa', state: 'CA' },
@@ -110,5 +188,13 @@ export const SOURCE_SCHOOLS: SourceSchoolCatalogEntry[] = [
   { name: 'De Anza College', school_type: 'CommunityCollege', city: 'Cupertino', state: 'CA' },
   { name: 'El Camino College', school_type: 'CommunityCollege', city: 'Torrance', state: 'CA' },
   { name: 'Foothill College', school_type: 'CommunityCollege', city: 'Los Altos Hills', state: 'CA' },
-  { name: 'Riverside City College', school_type: 'CommunityCollege', city: 'Riverside', state: 'CA' }
+  { name: 'Riverside City College', school_type: 'CommunityCollege', city: 'Riverside', state: 'CA' },
+  { name: 'Long Beach City College', school_type: 'CommunityCollege', city: 'Long Beach', state: 'CA' },
+  { name: 'Fullerton College', school_type: 'CommunityCollege', city: 'Fullerton', state: 'CA' },
+  { name: 'Diablo Valley College', school_type: 'CommunityCollege', city: 'Pleasant Hill', state: 'CA' },
+  { name: 'Cerritos College', school_type: 'CommunityCollege', city: 'Norwalk', state: 'CA' },
+  { name: 'Irvine Valley College', school_type: 'CommunityCollege', city: 'Irvine', state: 'CA' },
+  { name: 'Saddleback College', school_type: 'CommunityCollege', city: 'Mission Viejo', state: 'CA' },
+  { name: 'Glendale Community College', school_type: 'CommunityCollege', city: 'Glendale', state: 'CA' },
+  { name: 'San Diego Mesa College', school_type: 'CommunityCollege', city: 'San Diego', state: 'CA' }
 ]

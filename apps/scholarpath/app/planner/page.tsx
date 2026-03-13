@@ -66,6 +66,36 @@ function AdviceList({ items }: { items: string[] }) {
   )
 }
 
+const extracurricularOptions = [
+  { label: 'Developing', value: 'developing' },
+  { label: 'Solid', value: 'solid' },
+  { label: 'Strong', value: 'strong' },
+  { label: 'Exceptional', value: 'exceptional' }
+] as const
+
+const progressOptions = [
+  { label: 'Early', value: 'early' },
+  { label: 'In Progress', value: 'in_progress' },
+  { label: 'Mostly Complete', value: 'mostly_complete' },
+  { label: 'Complete', value: 'complete' }
+] as const
+
+const freshmanRigorExamples = [
+  'AP Calculus AB/BC',
+  'AP Computer Science A',
+  'AP Biology or AP Chemistry',
+  'AP Statistics',
+  'dual-enrollment core courses'
+]
+
+const transferPrepExamples = [
+  'major prerequisites',
+  'general education pattern',
+  'course articulation checks',
+  'writing and math sequence',
+  'application essays and PIQs'
+]
+
 function PlannerPageContent() {
   const searchParams = useSearchParams()
   const [campus, setCampus] = useState(campuses[0])
@@ -78,6 +108,17 @@ function PlannerPageContent() {
   const [selectedYears, setSelectedYears] = useState<number[]>([years[0]])
   const [sourceSchool, setSourceSchool] = useState(searchParams.get('sourceSchool') ?? '')
   const [schoolType, setSchoolType] = useState(searchParams.get('schoolType') ?? '')
+  const [currentGpa, setCurrentGpa] = useState('3.7')
+  const [targetGpa, setTargetGpa] = useState('')
+  const [apCount, setApCount] = useState('6')
+  const [extracurricularStrength, setExtracurricularStrength] =
+    useState<'developing' | 'solid' | 'strong' | 'exceptional'>('solid')
+  const [transferRequirementProgress, setTransferRequirementProgress] =
+    useState<'early' | 'in_progress' | 'mostly_complete' | 'complete'>('in_progress')
+  const [majorPreparationProgress, setMajorPreparationProgress] =
+    useState<'early' | 'in_progress' | 'mostly_complete' | 'complete'>('in_progress')
+  const [plannedCourses, setPlannedCourses] = useState('')
+  const [targetActivities, setTargetActivities] = useState('')
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [loading, setLoading] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -113,6 +154,18 @@ function PlannerPageContent() {
       return transferMajors.includes(prev) ? prev : transferMajors[0]
     })
   }, [cohort])
+
+  useEffect(() => {
+    if (!sourceSchool) {
+      return
+    }
+
+    const validSchools = cohort === 'transfer' ? [...COMMUNITY_COLLEGES] : [...HIGH_SCHOOLS]
+    if (!validSchools.some((school) => school === sourceSchool)) {
+      setSourceSchool('')
+      setSchoolType('')
+    }
+  }, [cohort, sourceSchool])
 
   useEffect(() => {
     const abort = new AbortController()
@@ -177,7 +230,21 @@ function PlannerPageContent() {
         sourceSchool: sourceSchool || null,
         schoolType: schoolType || null,
         years: selectedYears,
-        metrics
+        metrics,
+        currentGpa: currentGpa ? Number(currentGpa) : null,
+        targetGpa: targetGpa ? Number(targetGpa) : null,
+        apCount: apCount ? Number(apCount) : null,
+        extracurricularStrength,
+        transferRequirementProgress,
+        majorPreparationProgress,
+        plannedCourses: plannedCourses
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+        targetActivities: targetActivities
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
       })
       setAdvisor(advice)
     } catch (error) {
@@ -303,6 +370,152 @@ function PlannerPageContent() {
             })}
           </div>
         </div>
+        <div className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-950/60 p-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-200">Student profile</p>
+            <p className="mt-1 text-sm text-slate-400">
+              {cohort === 'transfer'
+                ? 'Include GPA, prerequisite progress, and coursework so the AI can judge transfer readiness instead of only citing admit-rate metrics.'
+                : 'Include GPA, AP or advanced rigor, and activities so the AI can compare your freshman profile against stronger applicants.'}
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3">
+              <label htmlFor="current-gpa" className="text-sm text-slate-400">
+                Current GPA
+              </label>
+              <input
+                id="current-gpa"
+                value={currentGpa}
+                onChange={(e) => setCurrentGpa(e.target.value)}
+                placeholder={cohort === 'transfer' ? '3.65' : '3.92 unweighted'}
+                className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+              />
+            </div>
+            <div className="grid gap-3">
+              <label htmlFor="target-gpa" className="text-sm text-slate-400">
+                Goal GPA
+              </label>
+              <input
+                id="target-gpa"
+                value={targetGpa}
+                onChange={(e) => setTargetGpa(e.target.value)}
+                placeholder={cohort === 'transfer' ? '3.8' : '4.2 weighted'}
+                className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+              />
+            </div>
+            <div className="grid gap-3">
+              <label htmlFor="ap-count" className="text-sm text-slate-400">
+                {cohort === 'freshman' ? 'AP / advanced courses completed or planned' : 'AP / advanced courses (optional)'}
+              </label>
+              <input
+                id="ap-count"
+                value={apCount}
+                onChange={(e) => setApCount(e.target.value)}
+                placeholder={cohort === 'freshman' ? '6' : 'leave blank if not relevant'}
+                className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+              />
+            </div>
+            <div className="grid gap-3">
+              <label htmlFor="extra-strength" className="text-sm text-slate-400">
+                Extracurricular profile
+              </label>
+              <select
+                id="extra-strength"
+                value={extracurricularStrength}
+                onChange={(e) =>
+                  setExtracurricularStrength(e.target.value as 'developing' | 'solid' | 'strong' | 'exceptional')
+                }
+                className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+              >
+                {extracurricularOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {cohort === 'transfer' && (
+              <>
+                <div className="grid gap-3">
+                  <label htmlFor="transfer-progress" className="text-sm text-slate-400">
+                    Transfer requirement progress
+                  </label>
+                  <select
+                    id="transfer-progress"
+                    value={transferRequirementProgress}
+                    onChange={(e) =>
+                      setTransferRequirementProgress(
+                        e.target.value as 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+                      )
+                    }
+                    className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+                  >
+                    {progressOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-3">
+                  <label htmlFor="major-progress" className="text-sm text-slate-400">
+                    Major prerequisite progress
+                  </label>
+                  <select
+                    id="major-progress"
+                    value={majorPreparationProgress}
+                    onChange={(e) =>
+                      setMajorPreparationProgress(
+                        e.target.value as 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+                      )
+                    }
+                    className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+                  >
+                    {progressOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="grid gap-3">
+            <label htmlFor="planned-courses" className="text-sm text-slate-400">
+              Planned or current courses
+            </label>
+            <input
+              id="planned-courses"
+              value={plannedCourses}
+              onChange={(e) => setPlannedCourses(e.target.value)}
+              placeholder={
+                cohort === 'transfer'
+                  ? 'Calculus II, Linear Algebra, Java, Physics, Organic Chemistry...'
+                  : 'AP Calculus BC, AP Physics C, AP Statistics, dual-enrollment English...'
+              }
+              className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+            />
+            <p className="text-xs text-slate-500">
+              {cohort === 'transfer'
+                ? `Good transfer plans usually clarify ${transferPrepExamples.join(', ')}.`
+                : `Stronger freshman applicants usually show rigor like ${freshmanRigorExamples.join(', ')}.`}
+            </p>
+          </div>
+          <div className="grid gap-3">
+            <label htmlFor="target-activities" className="text-sm text-slate-400">
+              Activities, leadership, work, or projects
+            </label>
+            <input
+              id="target-activities"
+              value={targetActivities}
+              onChange={(e) => setTargetActivities(e.target.value)}
+              placeholder="Research, tutoring, robotics, debate, hospital volunteering, internships..."
+              className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+            />
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-4">
@@ -364,6 +577,8 @@ function PlannerPageContent() {
             <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
               <p className="text-sm text-slate-400">Summary</p>
               <p className="mt-2 text-base text-white">{advisor.summary}</p>
+              <p className="mt-4 text-sm font-semibold text-fuchsia-300">Competitiveness</p>
+              <p className="mt-2 text-sm text-slate-200">{advisor.competitiveness}</p>
               <p className="mt-3 text-xs text-slate-500">{advisor.disclaimer}</p>
             </div>
             <div className="grid gap-4">
@@ -378,6 +593,18 @@ function PlannerPageContent() {
               <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
                 <p className="text-sm font-semibold text-sky-300">Next steps</p>
                 <AdviceList items={advisor.next_steps} />
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-cyan-300">Coursework plan</p>
+                <AdviceList items={advisor.coursework_plan} />
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-violet-300">Extracurricular plan</p>
+                <AdviceList items={advisor.extracurricular_plan} />
+              </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-sm font-semibold text-orange-300">How you compare</p>
+                <AdviceList items={advisor.profile_comparison} />
               </div>
             </div>
           </div>

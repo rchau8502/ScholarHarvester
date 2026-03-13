@@ -117,12 +117,24 @@ export interface AdvisorRequest {
   schoolType?: string | null
   years: number[]
   metrics: Metric[]
+  currentGpa?: number | null
+  targetGpa?: number | null
+  apCount?: number | null
+  extracurricularStrength?: 'developing' | 'solid' | 'strong' | 'exceptional'
+  transferRequirementProgress?: 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+  majorPreparationProgress?: 'early' | 'in_progress' | 'mostly_complete' | 'complete'
+  plannedCourses?: string[]
+  targetActivities?: string[]
 }
 
 export interface AdvisorResponse {
   summary: string
+  competitiveness: string
   strengths: string[]
   cautions: string[]
   next_steps: string[]
+  coursework_plan: string[]
+  extracurricular_plan: string[]
+  profile_comparison: string[]
   disclaimer: string
 }
