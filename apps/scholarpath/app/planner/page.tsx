@@ -510,18 +510,26 @@ function PlannerPageContent() {
   }
 
   const completedTaskCount = planTasks.filter((task) => task.done).length
+  const destinationLabel = cohort === 'transfer' ? 'Transfer to' : 'Apply to'
+  const applicantTypeLabel = cohort === 'transfer' ? 'Plan type' : 'Applicant type'
+  const focusLabel = cohort === 'transfer' ? 'Transfer major' : 'Intended area of study'
+  const sourceSchoolLabel = cohort === 'transfer' ? 'Transfer from' : 'Current high school'
+  const sourceSchoolPlaceholder = cohort === 'transfer' ? 'All community colleges' : 'All high schools'
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
       <header className="space-y-3">
-        <p className="text-lg text-slate-400">Evidence Drawer + Dashboards</p>
+        <p className="text-lg text-slate-400">College plan + evidence-backed guidance</p>
         <h1 className="text-3xl font-bold">ScholarPath</h1>
+        <p className="max-w-3xl text-sm text-slate-400">
+          Build a clearer step-by-step plan for where you want to go, where you are coming from, and what to do next.
+        </p>
       </header>
 
       <section className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-lg shadow-slate-900/40">
         <div className="grid gap-3 sm:grid-cols-2">
           <label htmlFor="campus-select" className="text-sm text-slate-400">
-            Campus
+            {destinationLabel}
           </label>
           <select
             value={campus}
@@ -540,7 +548,7 @@ function PlannerPageContent() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label htmlFor="cohort-select" className="text-sm text-slate-400">
-            Cohort
+            {applicantTypeLabel}
           </label>
           <select
             value={cohort}
@@ -557,7 +565,7 @@ function PlannerPageContent() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label htmlFor="focus-select" className="text-sm text-slate-400">
-            {cohort === 'transfer' ? 'Major' : 'Discipline'}
+            {focusLabel}
           </label>
           <select
             value={focus}
@@ -572,7 +580,7 @@ function PlannerPageContent() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label htmlFor="source-school-select" className="text-sm text-slate-400">
-            Source school
+            {sourceSchoolLabel}
           </label>
           <select
             value={sourceSchool}
@@ -596,14 +604,14 @@ function PlannerPageContent() {
             }}
             className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
           >
-            <option value="">All schools</option>
+            <option value="">{sourceSchoolPlaceholder}</option>
             {(cohort === 'transfer' ? COMMUNITY_COLLEGES : HIGH_SCHOOLS).map((item) => (
               <option key={item}>{item}</option>
             ))}
           </select>
         </div>
         <div>
-          <p className="text-sm text-slate-400">Year</p>
+          <p className="text-sm text-slate-400">Data year</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {years.map((yr) => {
               const active = selectedYears.includes(yr)
