@@ -1,4 +1,5 @@
 import type { Citation, DatasetEntry, Metric, ScholarDataBundle, SourceSchool } from '@/lib/types'
+import { COMMUNITY_COLLEGES, HIGH_SCHOOLS } from '@/lib/server/sourceSchoolConfig'
 
 const transferMajors = ['Mathematics', 'Computer Science'] as const
 const freshmanDisciplines = ['Physical Sciences', 'Engineering', 'Social Sciences'] as const
@@ -82,200 +83,108 @@ function generateLocalData(): ScholarDataBundle {
   campuses.forEach((campus, campusIndex) => {
     transferMajors.forEach((major, majorIndex) => {
       years.forEach((year, yearIndex) => {
-        const currentDatasetId = datasetId++
-        datasets.push({
-          id: currentDatasetId,
-          title: `${campus.name} transfer ${major} outlook`,
-          year,
-          term: 'Fall',
-          cohort: 'transfer',
-          notes: `Bundled site seed for ${campus.name} ${major}.`
-        })
+        COMMUNITY_COLLEGES.forEach((sourceSchool, schoolIndex) => {
+          const currentDatasetId = datasetId++
+          datasets.push({
+            id: currentDatasetId,
+            title: `${campus.name} transfer ${major} outlook from ${sourceSchool}`,
+            year,
+            term: 'Fall',
+            cohort: 'transfer',
+            notes: `Bundled site seed for ${campus.name} ${major} from ${sourceSchool}.`
+          })
 
-        const applicants = 2100 + campus.offset * 180 + majorIndex * 240 + yearIndex * 110
-        const admitRate = 54 - campusIndex * 1.7 + majorIndex * 2.2 - yearIndex * 0.9
-        const admits = applicants * (admitRate / 100)
-        const enrolled = admits * (0.42 + majorIndex * 0.03)
-        const gpaP25 = 3.08 + campus.offset * 0.03 + majorIndex * 0.04 - yearIndex * 0.02
-        const gpaP50 = gpaP25 + 0.35
-        const gpaP75 = gpaP50 + 0.28
+          const applicants = 2100 + campus.offset * 180 + majorIndex * 240 + yearIndex * 110 + schoolIndex * 35
+          const admitRate = 54 - campusIndex * 1.7 + majorIndex * 2.2 - yearIndex * 0.9 - schoolIndex * 0.3
+          const admits = applicants * (admitRate / 100)
+          const enrolled = admits * (0.42 + majorIndex * 0.03)
+          const gpaP25 = 3.08 + campus.offset * 0.03 + majorIndex * 0.04 - yearIndex * 0.02 - schoolIndex * 0.01
+          const gpaP50 = gpaP25 + 0.35
+          const gpaP75 = gpaP50 + 0.28
 
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'applicants',
-          value: applicants,
-          unit: 'headcount',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'admits',
-          value: admits,
-          unit: 'headcount',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'enrolled',
-          value: enrolled,
-          unit: 'headcount',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'gpa_p25',
-          value: gpaP25,
-          unit: 'GPA',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'gpa_p50',
-          value: gpaP50,
-          unit: 'GPA',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'gpa_p75',
-          value: gpaP75,
-          unit: 'GPA',
-          focusLabel: major
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'transfer',
-          year,
-          term: 'Fall',
-          major,
-          statName: 'admit_rate',
-          value: admitRate,
-          unit: 'percent',
-          focusLabel: major
+          ;[
+            ['applicants', applicants, 'headcount'],
+            ['admits', admits, 'headcount'],
+            ['enrolled', enrolled, 'headcount'],
+            ['gpa_p25', gpaP25, 'GPA'],
+            ['gpa_p50', gpaP50, 'GPA'],
+            ['gpa_p75', gpaP75, 'GPA'],
+            ['admit_rate', admitRate, 'percent']
+          ].forEach(([statName, value, unit]) => {
+            metrics.push({
+              id: nextMetricId(),
+              dataset_id: currentDatasetId,
+              campus: campus.name,
+              major,
+              discipline: null,
+              source_school: sourceSchool,
+              school_type: 'CommunityCollege',
+              cohort: 'transfer',
+              stat_name: statName as string,
+              stat_value_numeric: Number(Number(value).toFixed(unit === 'headcount' ? 0 : 2)),
+              stat_value_text: null,
+              unit: unit as string,
+              percentile: String(statName).startsWith('gpa_p') ? String(statName).split('_').at(-1) ?? null : null,
+              year,
+              term: 'Fall',
+              notes: null,
+              citations: [buildCitation(campus.name, 'transfer', major, year, statName as string)]
+            })
+          })
         })
       })
     })
 
     freshmanDisciplines.forEach((discipline, disciplineIndex) => {
       years.forEach((year, yearIndex) => {
-        const currentDatasetId = datasetId++
-        datasets.push({
-          id: currentDatasetId,
-          title: `${campus.name} freshman ${discipline} outlook`,
-          year,
-          term: 'Fall',
-          cohort: 'freshman',
-          notes: `Bundled site seed for ${campus.name} ${discipline}.`
-        })
+        HIGH_SCHOOLS.forEach((sourceSchool, schoolIndex) => {
+          const currentDatasetId = datasetId++
+          datasets.push({
+            id: currentDatasetId,
+            title: `${campus.name} freshman ${discipline} outlook from ${sourceSchool}`,
+            year,
+            term: 'Fall',
+            cohort: 'freshman',
+            notes: `Bundled site seed for ${campus.name} ${discipline} from ${sourceSchool}.`
+          })
 
-        const applicants = 3900 + campus.offset * 240 + disciplineIndex * 320 + yearIndex * 150
-        const admitRate = 42 - campusIndex * 1.3 - disciplineIndex * 1.8 - yearIndex * 0.8
-        const admits = applicants * (admitRate / 100)
-        const enrolled = admits * (0.38 + disciplineIndex * 0.02)
-        const gpaP25 = 3.26 + campus.offset * 0.02 + disciplineIndex * 0.03 - yearIndex * 0.02
-        const gpaP50 = gpaP25 + 0.31
-        const gpaP75 = gpaP50 + 0.24
+          const applicants = 3900 + campus.offset * 240 + disciplineIndex * 320 + yearIndex * 150 + schoolIndex * 40
+          const admitRate = 42 - campusIndex * 1.3 - disciplineIndex * 1.8 - yearIndex * 0.8 - schoolIndex * 0.25
+          const admits = applicants * (admitRate / 100)
+          const enrolled = admits * (0.38 + disciplineIndex * 0.02)
+          const gpaP25 = 3.26 + campus.offset * 0.02 + disciplineIndex * 0.03 - yearIndex * 0.02 - schoolIndex * 0.01
+          const gpaP50 = gpaP25 + 0.31
+          const gpaP75 = gpaP50 + 0.24
 
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'applicants',
-          value: applicants,
-          unit: 'headcount',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'admits',
-          value: admits,
-          unit: 'headcount',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'enrolled',
-          value: enrolled,
-          unit: 'headcount',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'gpa_p25',
-          value: gpaP25,
-          unit: 'GPA',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'gpa_p50',
-          value: gpaP50,
-          unit: 'GPA',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'gpa_p75',
-          value: gpaP75,
-          unit: 'GPA',
-          focusLabel: discipline
-        })
-        pushMetric(metrics, currentDatasetId, nextMetricId, {
-          campus: campus.name,
-          cohort: 'freshman',
-          year,
-          term: 'Fall',
-          discipline,
-          statName: 'admit_rate',
-          value: admitRate,
-          unit: 'percent',
-          focusLabel: discipline
+          ;[
+            ['applicants', applicants, 'headcount'],
+            ['admits', admits, 'headcount'],
+            ['enrolled', enrolled, 'headcount'],
+            ['gpa_p25', gpaP25, 'GPA'],
+            ['gpa_p50', gpaP50, 'GPA'],
+            ['gpa_p75', gpaP75, 'GPA'],
+            ['admit_rate', admitRate, 'percent']
+          ].forEach(([statName, value, unit]) => {
+            metrics.push({
+              id: nextMetricId(),
+              dataset_id: currentDatasetId,
+              campus: campus.name,
+              major: null,
+              discipline,
+              source_school: sourceSchool,
+              school_type: 'HighSchool',
+              cohort: 'freshman',
+              stat_name: statName as string,
+              stat_value_numeric: Number(Number(value).toFixed(unit === 'headcount' ? 0 : 2)),
+              stat_value_text: null,
+              unit: unit as string,
+              percentile: String(statName).startsWith('gpa_p') ? String(statName).split('_').at(-1) ?? null : null,
+              year,
+              term: 'Fall',
+              notes: null,
+              citations: [buildCitation(campus.name, 'freshman', discipline, year, statName as string)]
+            })
+          })
         })
       })
     })

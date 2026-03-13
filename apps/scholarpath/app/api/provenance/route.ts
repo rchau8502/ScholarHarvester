@@ -6,6 +6,13 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const campus = url.searchParams.get('campus')
   const year = url.searchParams.get('year')
+  const sourceSchool = url.searchParams.get('source_school')
   const data = await getScholarData()
-  return NextResponse.json(queryProvenance(data, { campus, year: year ? Number(year) : null }))
+  return NextResponse.json(
+    queryProvenance(data, {
+      campus,
+      year: year ? Number(year) : null,
+      source_school: sourceSchool
+    })
+  )
 }

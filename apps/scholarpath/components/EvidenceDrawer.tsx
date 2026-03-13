@@ -11,9 +11,20 @@ interface EvidenceDrawerProps {
   cohort: 'transfer' | 'freshman'
   focus: string
   years: number[]
+  sourceSchool?: string | null
+  schoolType?: string | null
 }
 
-export default function EvidenceDrawer({ open, onClose, campus, cohort, focus, years }: EvidenceDrawerProps) {
+export default function EvidenceDrawer({
+  open,
+  onClose,
+  campus,
+  cohort,
+  focus,
+  years,
+  sourceSchool,
+  schoolType
+}: EvidenceDrawerProps) {
   const [profile, setProfile] = useState<ProfileResponse | null>(null)
   const [provenance, setProvenance] = useState<ProvenanceEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -27,8 +38,18 @@ export default function EvidenceDrawer({ open, onClose, campus, cohort, focus, y
 
     const targetYear = years.length ? years[0] : undefined
     Promise.all([
-      getProfile(cohort, { campus, ...(cohort === 'transfer' ? { major: focus } : { discipline: focus }), years }),
-      getProvenance({ campus, year: targetYear })
+      getProfile(cohort, {
+        campus,
+        ...(cohort === 'transfer' ? { major: focus } : { discipline: focus }),
+        ...(sourceSchool ? { source_school: sourceSchool } : {}),
+        ...(schoolType ? { school_type: schoolType } : {}),
+        years
+      }),
+      getProvenance({
+        campus,
+        year: targetYear,
+        ...(sourceSchool ? { source_school: sourceSchool } : {})
+      })
     ])
       .then(([profileData, provenanceData]) => {
         if (!cancelled) {
@@ -51,7 +72,7 @@ export default function EvidenceDrawer({ open, onClose, campus, cohort, focus, y
     return () => {
       cancelled = true
     }
-  }, [open, campus, cohort, focus, years])
+  }, [open, campus, cohort, focus, years, sourceSchool, schoolType])
 
   const outdatedWarning = useMemo(() => {
     if (!profile) return null
@@ -73,6 +94,7 @@ export default function EvidenceDrawer({ open, onClose, campus, cohort, focus, y
           <div>
             <h3 className="text-xl font-semibold">Evidence Drawer</h3>
             <p className="text-sm text-slate-400">{campus} · {cohort}</p>
+            {sourceSchool && <p className="text-sm text-amber-300">{sourceSchool}</p>}
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             Close

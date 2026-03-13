@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import EvidenceDrawer from '@/components/EvidenceDrawer'
 import { getMetrics } from '@/lib/api'
 import type { Metric } from '@/lib/types'
+import { COMMUNITY_COLLEGES, HIGH_SCHOOLS } from '@/lib/server/sourceSchoolConfig'
 
 const cohortOptions = [
   { label: 'Transfer', value: 'transfer' },
@@ -36,14 +38,41 @@ function statValue(metrics: Metric[], name: string) {
   return match.stat_value_text ?? '--'
 }
 
-export default function PlannerPage() {
+function PlannerPageContent() {
+  const searchParams = useSearchParams()
   const [campus, setCampus] = useState(campuses[0])
-  const [cohort, setCohort] = useState<'transfer' | 'freshman'>('transfer')
+  const initialCohort =
+    searchParams.get('cohort') === 'freshman' || searchParams.get('cohort') === 'transfer'
+      ? (searchParams.get('cohort') as 'transfer' | 'freshman')
+      : 'transfer'
+  const [cohort, setCohort] = useState<'transfer' | 'freshman'>(initialCohort)
   const [focus, setFocus] = useState(transferMajors[0])
   const [selectedYears, setSelectedYears] = useState<number[]>([years[0]])
+  const [sourceSchool, setSourceSchool] = useState(searchParams.get('sourceSchool') ?? '')
+  const [schoolType, setSchoolType] = useState(searchParams.get('schoolType') ?? '')
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [loading, setLoading] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  useEffect(() => {
+    const campusParam = searchParams.get('campus')
+    const sourceSchoolParam = searchParams.get('sourceSchool')
+    const schoolTypeParam = searchParams.get('schoolType')
+    const focusParam = searchParams.get('focus')
+
+    if (campusParam && campuses.includes(campusParam)) {
+      setCampus(campusParam)
+    }
+    if (sourceSchoolParam) {
+      setSourceSchool(sourceSchoolParam)
+    }
+    if (schoolTypeParam) {
+      setSchoolType(schoolTypeParam)
+    }
+    if (focusParam) {
+      setFocus(focusParam)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     setFocus((prev) => {
@@ -69,6 +98,12 @@ export default function PlannerPage() {
         } else {
           params.discipline = focus
         }
+        if (sourceSchool) {
+          params.source_school = sourceSchool
+        }
+        if (schoolType) {
+          params.school_type = schoolType
+        }
         if (selectedYears.length) {
           params.years = selectedYears
         }
@@ -86,7 +121,7 @@ export default function PlannerPage() {
     }
     fetch()
     return () => abort.abort()
-  }, [campus, cohort, focus, selectedYears])
+  }, [campus, cohort, focus, selectedYears, sourceSchool, schoolType])
 
   const kpis = useMemo(
     () => [
@@ -153,6 +188,38 @@ export default function PlannerPage() {
             ))}
           </select>
         </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label htmlFor="source-school-select" className="text-sm text-slate-400">
+            Source school
+          </label>
+          <select
+            value={sourceSchool}
+            id="source-school-select"
+            onChange={(e) => {
+              const nextSchool = e.target.value
+              setSourceSchool(nextSchool)
+              setSchoolType(
+                HIGH_SCHOOLS.includes(nextSchool as (typeof HIGH_SCHOOLS)[number])
+                  ? 'HighSchool'
+                  : COMMUNITY_COLLEGES.includes(nextSchool as (typeof COMMUNITY_COLLEGES)[number])
+                    ? 'CommunityCollege'
+                    : ''
+              )
+              if (nextSchool && HIGH_SCHOOLS.includes(nextSchool as (typeof HIGH_SCHOOLS)[number])) {
+                setCohort('freshman')
+              }
+              if (nextSchool && COMMUNITY_COLLEGES.includes(nextSchool as (typeof COMMUNITY_COLLEGES)[number])) {
+                setCohort('transfer')
+              }
+            }}
+            className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+          >
+            <option value="">All schools</option>
+            {(cohort === 'transfer' ? COMMUNITY_COLLEGES : HIGH_SCHOOLS).map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        </div>
         <div>
           <p className="text-sm text-slate-400">Year</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -190,6 +257,7 @@ export default function PlannerPage() {
           <div>
             <p className="text-sm text-slate-400">Metrics</p>
             <h2 className="text-2xl font-semibold">Latest upload</h2>
+            {sourceSchool && <p className="mt-1 text-sm text-amber-300">Filtered by {sourceSchool}</p>}
           </div>
           <button
             type="button"
@@ -212,7 +280,17 @@ export default function PlannerPage() {
         cohort={cohort}
         focus={focus}
         years={selectedYears}
+        sourceSchool={sourceSchool || null}
+        schoolType={schoolType || null}
       />
     </div>
+  )
+}
+
+export default function PlannerPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto w-full max-w-6xl px-4 py-10 text-sm text-slate-400">Loading planner…</div>}>
+      <PlannerPageContent />
+    </Suspense>
   )
 }

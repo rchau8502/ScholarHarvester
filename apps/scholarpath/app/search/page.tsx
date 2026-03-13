@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
 import { searchSourceSchools } from '@/lib/api'
 import type { SourceSchool } from '@/lib/types'
 
@@ -11,10 +12,35 @@ export default function SearchPage() {
   const [type, setType] = useState(schoolTypes[0])
   const [results, setResults] = useState<SourceSchool[]>([])
   const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadDefaults() {
+      setLoading(true)
+      try {
+        const data = await searchSourceSchools('', type)
+        if (!cancelled) {
+          setResults(data)
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+    loadDefaults()
+    return () => {
+      cancelled = true
+    }
+  }, [type])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
+    setSearched(true)
     try {
       const data = await searchSourceSchools(query, type)
       setResults(data)
@@ -57,7 +83,11 @@ export default function SearchPage() {
       </form>
 
       {loading && <p className="text-sm text-slate-400">Searching…</p>}
-      {!loading && !results.length && <p className="text-sm text-slate-400">Use the search bar to look up a secondary school.</p>}
+      {!loading && !results.length && (
+        <p className="text-sm text-slate-400">
+          {searched ? 'No schools matched that search.' : 'No schools available for that filter.'}
+        </p>
+      )}
 
       <div className="space-y-4">
         {results.map((school) => (
@@ -67,9 +97,14 @@ export default function SearchPage() {
                 <p className="text-lg font-semibold text-white">{school.name}</p>
                 <p className="text-sm text-slate-400">{school.city}, {school.state}</p>
               </div>
-              <button className="rounded-2xl bg-amber-400 px-3 py-1 text-sm font-semibold text-slate-900">
+              <Link
+                href={`/planner?cohort=${school.school_type === 'HighSchool' ? 'freshman' : 'transfer'}&sourceSchool=${encodeURIComponent(
+                  school.name
+                )}&schoolType=${school.school_type}`}
+                className="rounded-2xl bg-amber-400 px-3 py-1 text-sm font-semibold text-slate-900"
+              >
                 Add to planner
-              </button>
+              </Link>
             </div>
             <p className="mt-2 text-xs text-slate-500">Type: {school.school_type}</p>
           </div>

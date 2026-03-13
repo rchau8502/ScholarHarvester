@@ -72,6 +72,8 @@ export function queryProfile(
     cohort: 'transfer' | 'freshman'
     major?: string | null
     discipline?: string | null
+    source_school?: string | null
+    school_type?: string | null
     years?: number[]
   }
 ) {
@@ -81,6 +83,14 @@ export function queryProfile(
     metrics = metrics.filter((metric) => metric.major === params.major)
   } else {
     metrics = metrics.filter((metric) => metric.discipline === params.discipline)
+  }
+
+  if (params.source_school) {
+    metrics = metrics.filter((metric) => metric.source_school === params.source_school)
+  }
+
+  if (params.school_type) {
+    metrics = metrics.filter((metric) => metric.school_type === params.school_type)
   }
 
   metrics = filterYears(metrics, params.years ?? []).map(normalizeMetric)
@@ -114,6 +124,7 @@ export function queryProvenance(
   params: {
     campus?: string | null
     year?: number | null
+    source_school?: string | null
   }
 ): ProvenanceEntry[] {
   const datasetMap = new Map<number, DatasetEntry>(data.datasets.map((dataset) => [dataset.id, dataset]))
@@ -122,6 +133,7 @@ export function queryProvenance(
   data.metrics.forEach((metric) => {
     if (params.campus && metric.campus !== params.campus) return
     if (params.year != null && metric.year !== params.year) return
+    if (params.source_school && metric.source_school !== params.source_school) return
     if (metric.dataset_id == null) return
 
     const dataset = datasetMap.get(metric.dataset_id)
