@@ -52,24 +52,25 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Source School Search</h1>
-        <p className="text-sm text-slate-400">Find HS/CCC partners and pull campus medians.</p>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10">
+      <header className="glass-panel rounded-[1.75rem] p-6 md:p-8">
+        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">ScholarStack Search</p>
+        <h1 className="mt-3 text-3xl font-semibold text-white">Source school explorer</h1>
+        <p className="mt-2 text-sm text-slate-300">Find high schools and community colleges, then load the planner with one click.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
+      <form onSubmit={handleSubmit} className="glass-panel flex flex-wrap gap-3 rounded-3xl p-4">
         <input
           type="text"
           placeholder="Search a school"
-          className="flex-1 rounded-2xl border border-slate-800 bg-slate-900 px-4 py-2 text-white"
+          className="flex-1 rounded-2xl border border-white/10 bg-[var(--panel-strong)] px-4 py-2 text-white"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         <select
           value={type}
           onChange={(event) => setType(event.target.value)}
-          className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-2 text-slate-100"
+          className="rounded-2xl border border-white/10 bg-[var(--panel-strong)] px-4 py-2 text-slate-100"
         >
           {schoolTypes.map((option) => (
             <option key={option} value={option}>
@@ -77,7 +78,7 @@ export default function SearchPage() {
             </option>
           ))}
         </select>
-        <button type="submit" className="rounded-2xl bg-amber-400 px-4 py-2 font-semibold text-slate-900">
+        <button type="submit" className="rounded-2xl bg-[var(--accent)] px-4 py-2 font-semibold text-slate-950">
           Search
         </button>
       </form>
@@ -91,7 +92,7 @@ export default function SearchPage() {
 
       <div className="space-y-4">
         {results.map((school) => (
-          <div key={school.name} className="rounded-3xl border border-slate-800 bg-slate-900 p-4">
+          <div key={school.name} className="glass-panel rounded-3xl p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-lg font-semibold text-white">{school.name}</p>
@@ -101,7 +102,7 @@ export default function SearchPage() {
                 href={`/planner?cohort=${school.school_type === 'HighSchool' ? 'freshman' : 'transfer'}&sourceSchool=${encodeURIComponent(
                   school.name
                 )}&schoolType=${school.school_type}`}
-                className="rounded-2xl bg-amber-400 px-3 py-1 text-sm font-semibold text-slate-900"
+                className="rounded-2xl bg-[var(--accent)] px-3 py-1 text-sm font-semibold text-slate-950"
               >
                 Add to planner
               </Link>

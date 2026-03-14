@@ -26,4 +26,4 @@ Edit `SOURCE_REGISTRY.yaml` to add crawlers/export paths. Robots decisions and t
 
 ## Seeds and data
 
-Run `poetry run scholarharvester.seed_demo` or `make seed` to populate campuses, majors, demo metrics, and citations that power ScholarPath until the first harvest.
+Run `poetry run scholarharvester.seed_demo` or `make seed` to populate campuses, majors, demo metrics, and citations that power the ScholarStack app until the first harvest.

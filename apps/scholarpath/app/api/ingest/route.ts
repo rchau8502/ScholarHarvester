@@ -17,7 +17,8 @@ function validateRequest(payload: any): payload is IngestRequest {
 }
 
 async function persistIfConfigured(payload: IngestResponse): Promise<PersistenceResult> {
-  const webhookUrl = process.env.SCHOLARPATH_INGEST_WEBHOOK_URL
+  const webhookUrl =
+    process.env.SCHOLARSTACK_INGEST_WEBHOOK_URL ?? process.env.SCHOLARPATH_INGEST_WEBHOOK_URL
   if (!webhookUrl) {
     return {
       mode: 'none',

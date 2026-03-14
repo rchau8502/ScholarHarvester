@@ -7,7 +7,7 @@ const platformPillars = [
       'Python adapters collect UC, CSU, and CCCCO data from official sources only, apply throttle and robots guardrails, and preserve citations for every metric.'
   },
   {
-    title: 'ScholarPath',
+    title: 'ScholarStack App',
     body:
       'The Next.js application turns harvested data into a planner, source-school search, and AI-assisted ingest flow for operators and students.'
   },
@@ -63,7 +63,7 @@ export default function Home() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--page-muted)]">
               This repository combines ScholarHarvester, a guarded data pipeline for California admissions signals,
-              with ScholarPath, a Next.js interface that exposes those signals through planning, search, and ingest
+              with ScholarStack, a Next.js interface that exposes those signals through planning, search, and ingest
               workflows.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

@@ -55,7 +55,7 @@ function normalizeBundle(payload: unknown): ScholarDataBundle {
 }
 
 export async function getScholarData(): Promise<ScholarDataBundle> {
-  const remoteUrl = process.env.SCHOLARPATH_DATA_URL
+  const remoteUrl = process.env.SCHOLARSTACK_DATA_URL ?? process.env.SCHOLARPATH_DATA_URL
   if (!remoteUrl) {
     return LOCAL_SCHOLAR_DATA
   }

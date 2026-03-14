@@ -34,7 +34,7 @@ const years = [2024, 2023, 2022]
 
 function KPI({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="flex-1 rounded-3xl border border-slate-800 bg-slate-900 p-4">
+    <div className="glass-panel flex-1 rounded-3xl p-4">
       <div className="text-sm text-slate-400">{label}</div>
       <div className="mt-1 text-3xl font-semibold text-white">
         {value}
@@ -58,7 +58,7 @@ function AdviceList({ items }: { items: string[] }) {
   return (
     <ul className="mt-2 space-y-2 text-sm text-slate-300">
       {items.map((item) => (
-        <li key={item} className="rounded-2xl border border-slate-800 bg-slate-950 px-3 py-2">
+        <li key={item} className="rounded-2xl border border-white/10 bg-[var(--panel-strong)] px-3 py-2">
           {item}
         </li>
       ))}
@@ -502,10 +502,14 @@ function PlannerPageContent() {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [courseDrafts, setCourseDrafts] = useState<Record<string, string>>({})
 
+  const planStorageSuffix = `${campus}:${cohort}:${focus}:${sourceSchool || 'all-schools'}:${schoolType || 'any-school-type'}`
   const planStorageKey = useMemo(
-    () =>
-      `scholarpath-plan:${campus}:${cohort}:${focus}:${sourceSchool || 'all-schools'}:${schoolType || 'any-school-type'}`,
-    [campus, cohort, focus, sourceSchool, schoolType]
+    () => `scholarstack-plan:${planStorageSuffix}`,
+    [planStorageSuffix]
+  )
+  const legacyPlanStorageKey = useMemo(
+    () => `scholarpath-plan:${planStorageSuffix}`,
+    [planStorageSuffix]
   )
 
   useEffect(() => {
@@ -554,7 +558,7 @@ function PlannerPageContent() {
     const fallbackSchedule = buildDefaultSchedule({ cohort, focus, plannedCourses })
 
     try {
-      const raw = window.localStorage.getItem(planStorageKey)
+      const raw = window.localStorage.getItem(planStorageKey) ?? window.localStorage.getItem(legacyPlanStorageKey)
       if (!raw) {
         setPlanTasks(fallbackTasks)
         setScheduleTerms(fallbackSchedule)
@@ -572,7 +576,7 @@ function PlannerPageContent() {
       setPlanTasks(fallbackTasks)
       setScheduleTerms(fallbackSchedule)
     }
-  }, [planStorageKey, cohort, campus, focus, sourceSchool, plannedCourses])
+  }, [planStorageKey, legacyPlanStorageKey, cohort, campus, focus, sourceSchool, plannedCourses])
 
   useEffect(() => {
     if (!planTasks.length && !scheduleTerms.length) {
@@ -807,15 +811,15 @@ function PlannerPageContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
-      <header className="space-y-3">
-        <p className="text-lg text-slate-400">College plan + evidence-backed guidance</p>
-        <h1 className="text-3xl font-bold">ScholarPath</h1>
-        <p className="max-w-3xl text-sm text-slate-400">
+      <header className="glass-panel rounded-[1.75rem] p-6 md:p-8">
+        <p className="text-xs uppercase tracking-[0.24em] text-slate-400">ScholarStack Planner</p>
+        <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Evidence-backed planning workspace</h1>
+        <p className="mt-3 max-w-3xl text-sm text-slate-300">
           Build a clearer step-by-step plan for where you want to go, where you are coming from, and what to do next.
         </p>
       </header>
 
-      <section className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-lg shadow-slate-900/40">
+      <section className="glass-panel grid gap-4 rounded-3xl p-6 shadow-lg shadow-slate-900/40">
         <div className="grid gap-3 sm:grid-cols-2">
           <label htmlFor="campus-select" className="text-sm text-slate-400">
             {destinationLabel}
@@ -914,7 +918,7 @@ function PlannerPageContent() {
                     )
                   }}
                   className={`rounded-2xl border px-3 py-1 text-sm ${
-                    active ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-slate-800 text-slate-400'
+                    active ? 'border-amber-400 bg-amber-400/20 text-amber-200' : 'border-white/10 text-slate-400'
                   }`}
                 >
                   {yr}
@@ -923,7 +927,7 @@ function PlannerPageContent() {
             })}
           </div>
         </div>
-        <div className="grid gap-4 rounded-3xl border border-slate-800 bg-slate-950/60 p-4">
+        <div className="grid gap-4 rounded-3xl border border-white/10 bg-[var(--panel-strong)] p-4">
           <div>
             <p className="text-sm font-semibold text-slate-200">Student profile</p>
             <p className="mt-1 text-sm text-slate-400">
@@ -1077,7 +1081,7 @@ function PlannerPageContent() {
         ))}
       </section>
 
-      <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+      <section className="glass-panel rounded-3xl p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm text-slate-400">Decision readout</p>
@@ -1144,7 +1148,7 @@ function PlannerPageContent() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr,1.4fr]">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+        <div className="glass-panel rounded-3xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-slate-400">Execution plan</p>
@@ -1213,7 +1217,7 @@ function PlannerPageContent() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+        <div className="glass-panel rounded-3xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-slate-400">Degree plan</p>
@@ -1282,7 +1286,7 @@ function PlannerPageContent() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+      <section className="glass-panel rounded-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm text-slate-400">Metrics</p>
@@ -1303,7 +1307,7 @@ function PlannerPageContent() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+      <section className="glass-panel rounded-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm text-slate-400">AI coach</p>

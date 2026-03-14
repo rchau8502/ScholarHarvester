@@ -17,7 +17,7 @@ const displayFont = Space_Grotesk({
 
 export const metadata = {
   title: 'ScholarStack',
-  description: 'ScholarHarvester and ScholarPath for evidence-backed California college planning.'
+  description: 'ScholarHarvester and ScholarStack for evidence-backed California college planning.'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 ScholarStack
               </Link>
               <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs uppercase tracking-[0.24em] text-slate-400">
-                ScholarPath app
+                Planner + Search + Ingest
               </span>
               <Link href="/" className="hover:text-white">
                 Home
