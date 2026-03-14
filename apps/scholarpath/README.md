@@ -12,7 +12,6 @@ npm run dev
 
 Copy `.env.local.example` to `.env.local` and set:
 
-- `OPENAI_API_KEY` to enable `/ingest`
 - `OPENAI_API_KEY` to enable `/ingest` and planner AI guidance
 - `OPENAI_MODEL` optional override, default `gpt-5`
 - `SCHOLARPATH_DATA_URL` optional remote JSON source for metrics/datasets/source schools

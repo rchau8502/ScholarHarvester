@@ -2,6 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', system-ui, sans-serif;
+@layer base {
+  :root {
+    --page-bg: #060b18;
+    --page-fg: #eef2ff;
+    --page-muted: #98a5c3;
+    --panel: rgba(11, 19, 37, 0.84);
+    --panel-strong: rgba(15, 24, 48, 0.96);
+    --line: rgba(255, 255, 255, 0.1);
+    --accent: #f7b733;
+    --accent-soft: rgba(247, 183, 51, 0.14);
+    --cyan-soft: rgba(59, 130, 246, 0.16);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--page-fg);
+    background:
+      radial-gradient(circle at top, rgba(35, 83, 183, 0.32), transparent 34%),
+      radial-gradient(circle at 80% 10%, rgba(247, 183, 51, 0.12), transparent 24%),
+      linear-gradient(180deg, #081021 0%, #050914 48%, #04070f 100%);
+    font-family: var(--font-body), sans-serif;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at center, black, transparent 78%);
+    opacity: 0.36;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-display {
+    font-family: var(--font-display), sans-serif;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: rgba(247, 183, 51, 0.3);
+    color: white;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: 0 22px 90px rgba(0, 0, 0, 0.35);
+  }
+
+  .section-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-glow::after {
+    content: '';
+    position: absolute;
+    inset: auto -10% -40% auto;
+    width: 240px;
+    height: 240px;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgba(247, 183, 51, 0.18), transparent 68%);
+    pointer-events: none;
+  }
+
+  .fade-up {
+    animation: fade-up 0.7s ease-out both;
+  }
+
+  .float-card {
+    animation: float-card 6s ease-in-out infinite;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-card {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }

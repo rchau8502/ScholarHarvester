@@ -1,24 +1,43 @@
 import React from 'react'
 import Link from 'next/link'
+import { IBM_Plex_Sans, Space_Grotesk } from 'next/font/google'
 import '../styles/globals.css'
 
+const bodyFont = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-body'
+})
+
+const displayFont = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-display'
+})
+
 export const metadata = {
-  title: 'ScholarPath',
-  description: 'Evidence drawer and dashboards for California college planning.'
+  title: 'ScholarStack',
+  description: 'ScholarHarvester and ScholarPath for evidence-backed California college planning.'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-100">
+      <body className={`${bodyFont.variable} ${displayFont.variable} bg-[var(--page-bg)] text-[var(--page-fg)] antialiased`}>
         <div className="min-h-screen">
-          <div className="bg-amber-400 text-slate-900 px-4 py-2 text-sm font-semibold text-center">
+          <div className="border-b border-black/10 bg-[var(--accent)] px-4 py-2 text-center text-sm font-semibold text-slate-950">
             Not affiliated with UC/CSU/ASSIST. Year/term matters.
           </div>
-          <nav className="border-b border-slate-800 bg-slate-950/90">
-            <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 py-4 text-sm text-slate-300">
-              <Link href="/planner" className="font-semibold text-white">
-                ScholarPath
+          <nav className="border-b border-white/10 bg-[color:rgba(6,11,24,0.78)] backdrop-blur">
+            <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-4 px-4 py-4 text-sm text-slate-300">
+              <Link href="/" className="font-display text-base font-semibold tracking-tight text-white">
+                ScholarStack
+              </Link>
+              <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs uppercase tracking-[0.24em] text-slate-400">
+                ScholarPath app
+              </span>
+              <Link href="/" className="hover:text-white">
+                Home
               </Link>
               <Link href="/planner" className="hover:text-white">
                 Planner
