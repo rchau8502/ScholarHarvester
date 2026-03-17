@@ -18,6 +18,7 @@ const initialForm: IngestRequest = {
 
 export default function IngestPage() {
   const [form, setForm] = useState<IngestRequest>(initialForm)
+  const [adminToken, setAdminToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<IngestResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -31,7 +32,10 @@ export default function IngestPage() {
     try {
       const response = await fetch('/api/ingest', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {})
+        },
         body: JSON.stringify(form)
       })
       const payload = await response.json()
@@ -60,6 +64,15 @@ export default function IngestPage() {
 
       <form onSubmit={handleSubmit} className="grid gap-4 glass-panel rounded-3xl p-6">
         <div className="grid gap-4 md:grid-cols-2">
+          <label className="text-sm text-slate-300">
+            Admin API token
+            <input
+              type="password"
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-[var(--panel-strong)] px-4 py-2 text-white"
+              value={adminToken}
+              onChange={(event) => setAdminToken(event.target.value)}
+            />
+          </label>
           <label className="text-sm text-slate-300">
             Title
             <input
@@ -152,7 +165,9 @@ export default function IngestPage() {
           >
             {loading ? 'Extracting…' : 'Run AI Extract'}
           </button>
-          <p className="text-sm text-slate-400">Requires `OPENAI_API_KEY` on the server.</p>
+          <p className="text-sm text-slate-400">
+            Requires `OPENAI_API_KEY` and a valid `SCHOLARSTACK_ADMIN_TOKEN`.
+          </p>
         </div>
       </form>
 

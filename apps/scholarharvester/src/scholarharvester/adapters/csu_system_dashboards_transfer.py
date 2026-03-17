@@ -1,33 +1,53 @@
 from __future__ import annotations
 
-from scholarharvester.adapters._factory import make_sample
+from scholarharvester.adapters.official import (
+    OfficialSourceConfig,
+    build_metrics_from_frame,
+    fetch_table,
+    make_dataset,
+    resolve_official_data_url,
+)
 from scholarharvester.adapters.utils import AdapterResult
 
 
 def collect(params: dict[str, str]) -> AdapterResult:
-    year = int(params.get("since", params.get("year", "2024")))
-    campus = params.get("campus", "CSU Long Beach")
-    major = params.get("major", "Mathematics")
-    stats = {
-        "applicants": 2600,
-        "admits": 1900,
-        "enrolled": 1400,
-        "gpa_p25": 3.0,
-        "gpa_p50": 3.45,
-        "gpa_p75": 3.8,
-    }
-    result = make_sample(
-        "csu_system_dashboards_transfer",
-        cohort="transfer",
-        year=year,
-        campus=campus,
-        major=major,
-        discipline=None,
-        term="Fall",
-        stats=stats,
-        citation_suffix="csu_transfer",
+    requested_year = int(params.get("since", params.get("year", "2022")))
+    campus = params.get("campus")
+    major = params.get("major")
+
+    source = OfficialSourceConfig(
+        adapter_name="csu_system_dashboards_transfer",
+        source_name="CSU Transfers Dashboard",
+        publisher="California State University",
+        env_var="SCHOLARSTACK_CSU_TRANSFER_CSV_URL",
+        base_url="https://www.calstate.edu/data",
+        discovery_keywords=("transfer", "csv"),
     )
-    for metric in result.metrics:
-        metric.school_type = "CommunityCollege"
-        metric.source_school = params.get("source_school", "Mt. San Antonio College")
-    return result
+    source_url = resolve_official_data_url(source)
+    frame = fetch_table(source_url)
+    metrics, latest_year = build_metrics_from_frame(
+        frame,
+        cohort="transfer",
+        default_campus=campus,
+        default_focus=major,
+        source_url=source_url,
+        publisher=source.publisher,
+        dataset_year=requested_year,
+        campus_filter=campus,
+        focus_filter=major,
+        focus_kind="major",
+        source_school_kind="CommunityCollege",
+    )
+    if not metrics:
+        raise RuntimeError(
+            f"csu_system_dashboards_transfer: no metrics extracted from {source_url}. "
+            "Verify column names or refine the export URL."
+        )
+    dataset = make_dataset(
+        title="CSU Transfer Admissions Dashboard",
+        year=latest_year,
+        term="Fall",
+        cohort="transfer",
+        source_url=source_url,
+    )
+    return AdapterResult(dataset=dataset, metrics=metrics)

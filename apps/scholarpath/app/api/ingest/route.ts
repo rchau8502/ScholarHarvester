@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { extractStructuredMetrics } from '@/lib/server/openaiExtract'
+import { checkRateLimit } from '@/lib/server/rateLimiter'
+import { requireAdminToken, getRequestIp } from '@/lib/server/security'
+import { getSupabaseAdminClient } from '@/lib/server/supabaseServer'
 import type { IngestRequest, IngestResponse, PersistenceResult } from '@/lib/types'
 
 function validateRequest(payload: any): payload is IngestRequest {
@@ -16,40 +19,110 @@ function validateRequest(payload: any): payload is IngestRequest {
   )
 }
 
-async function persistIfConfigured(payload: IngestResponse): Promise<PersistenceResult> {
-  const webhookUrl =
-    process.env.SCHOLARSTACK_INGEST_WEBHOOK_URL ?? process.env.SCHOLARPATH_INGEST_WEBHOOK_URL
-  if (!webhookUrl) {
-    return {
-      mode: 'none',
-      status: 'not_configured',
-      detail: 'No persistence webhook configured. Extraction returned only in the API response.'
-    }
+async function persistToSupabase(extraction: IngestResponse['extraction']): Promise<PersistenceResult> {
+  const supabase = getSupabaseAdminClient()
+  const { data: dataset, error: datasetError } = await supabase
+    .from('dataset')
+    .upsert(
+      {
+        title: extraction.dataset.title,
+        year: extraction.dataset.year,
+        cohort: extraction.dataset.cohort,
+        term: extraction.dataset.term,
+        source: 'AI ingest',
+        notes: extraction.dataset.notes ?? null
+      },
+      { onConflict: 'title,year,cohort,term' }
+    )
+    .select('id')
+    .single()
+
+  if (datasetError || !dataset) {
+    throw new Error(`Unable to persist dataset: ${datasetError?.message ?? 'dataset insert failed'}`)
   }
 
-  const response = await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
+  let persistedMetrics = 0
+  let persistedCitations = 0
 
-  if (!response.ok) {
-    const detail = await response.text()
-    return {
-      mode: 'webhook',
-      status: 'failed',
-      detail: `Webhook responded with ${response.status}: ${detail}`
+  for (const metric of extraction.metrics) {
+    const { data: metricRow, error: metricError } = await supabase
+      .from('metric')
+      .upsert(
+        {
+          dataset_id: dataset.id,
+          campus: metric.campus,
+          major: metric.major ?? null,
+          discipline: metric.discipline ?? null,
+          source_school: metric.source_school ?? null,
+          school_type: metric.school_type ?? null,
+          cohort: metric.cohort,
+          year: metric.year,
+          term: metric.term,
+          stat_name: metric.stat_name,
+          stat_value_numeric: metric.stat_value_numeric ?? null,
+          stat_value_text: metric.stat_value_text ?? null,
+          unit: metric.unit ?? null,
+          percentile: metric.percentile ?? null,
+          notes: metric.notes ?? null
+        },
+        { onConflict: 'dataset_id,campus,major,discipline,stat_name,year,term' }
+      )
+      .select('id')
+      .single()
+
+    if (metricError || !metricRow) {
+      throw new Error(`Unable to persist metric "${metric.stat_name}": ${metricError?.message ?? 'insert failed'}`)
     }
+
+    persistedMetrics += 1
+    if (!metric.citations.length) {
+      continue
+    }
+
+    const { error: citationsError } = await supabase.from('citation').upsert(
+      metric.citations.map((citation) => ({
+        metric_id: metricRow.id,
+        title: citation.title,
+        publisher: citation.publisher,
+        year: citation.year,
+        source_url: citation.source_url,
+        interpretation_note: citation.interpretation_note ?? null
+      })),
+      { onConflict: 'metric_id,source_url' }
+    )
+
+    if (citationsError) {
+      throw new Error(`Unable to persist citations for "${metric.stat_name}": ${citationsError.message}`)
+    }
+
+    persistedCitations += metric.citations.length
   }
 
   return {
-    mode: 'webhook',
+    mode: 'supabase',
     status: 'persisted',
-    detail: 'Extraction forwarded to the configured persistence webhook.'
+    detail: `Persisted ${persistedMetrics} metrics and ${persistedCitations} citations to Supabase.`
   }
 }
 
 export async function POST(request: NextRequest) {
+  const adminResponse = requireAdminToken(request)
+  if (adminResponse) {
+    return adminResponse
+  }
+
+  const rateLimit = checkRateLimit({
+    key: `ingest:${getRequestIp(request)}`,
+    max: 8,
+    windowMs: 5 * 60 * 1000
+  })
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } }
+    )
+  }
+
   const payload = await request.json()
   if (!validateRequest(payload)) {
     return NextResponse.json({ error: 'Invalid ingest payload' }, { status: 400 })
@@ -62,10 +135,10 @@ export async function POST(request: NextRequest) {
       persistence: {
         mode: 'none',
         status: 'skipped',
-        detail: 'Persistence has not been attempted yet.'
+        detail: 'Persistence has not run yet.'
       }
     }
-    const persistence = await persistIfConfigured(provisional)
+    const persistence = await persistToSupabase(provisional.extraction)
     return NextResponse.json({
       extraction,
       persistence

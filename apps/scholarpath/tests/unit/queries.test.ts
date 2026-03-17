@@ -1,11 +1,72 @@
 import { describe, expect, test } from 'vitest'
 import { TARGET_CAMPUSES, TRANSFER_MAJORS } from '@/lib/catalog'
-import { LOCAL_SCHOLAR_DATA } from '@/lib/server/localData'
 import { queryMetrics, queryProfile, querySourceSchools } from '@/lib/server/queries'
+import type { ScholarDataBundle } from '@/lib/types'
+
+const TEST_DATA: ScholarDataBundle = {
+  datasets: [
+    { id: 1, title: 'UC Transfer 2024', year: 2024, term: 'Fall', cohort: 'transfer' },
+    { id: 2, title: 'UC Freshman 2024', year: 2024, term: 'Fall', cohort: 'freshman' }
+  ],
+  metrics: [
+    {
+      id: 1,
+      dataset_id: 1,
+      campus: 'UC Irvine',
+      major: 'Mathematics',
+      discipline: null,
+      cohort: 'transfer',
+      stat_name: 'gpa_p50',
+      stat_value_numeric: 3.5,
+      stat_value_text: null,
+      unit: null,
+      percentile: '50',
+      year: 2024,
+      term: 'Fall',
+      citations: [{ title: 'UC Info', publisher: 'UC', year: 2024, source_url: 'https://example.com/1' }]
+    },
+    {
+      id: 2,
+      dataset_id: 2,
+      campus: 'UCLA',
+      major: null,
+      discipline: 'Engineering',
+      cohort: 'freshman',
+      stat_name: 'gpa_p50',
+      stat_value_numeric: 4.2,
+      stat_value_text: null,
+      unit: null,
+      percentile: '50',
+      year: 2023,
+      term: 'Fall',
+      citations: [{ title: 'UC Info', publisher: 'UC', year: 2023, source_url: 'https://example.com/2' }]
+    },
+    {
+      id: 3,
+      dataset_id: 2,
+      campus: 'UCLA',
+      major: null,
+      discipline: 'Engineering',
+      cohort: 'freshman',
+      stat_name: 'admit_rate',
+      stat_value_numeric: 9.1,
+      stat_value_text: null,
+      unit: '%',
+      percentile: null,
+      year: 2024,
+      term: 'Fall',
+      citations: [{ title: 'UC Info', publisher: 'UC', year: 2024, source_url: 'https://example.com/3' }]
+    }
+  ],
+  sourceSchools: [
+    { name: 'Irvine Valley College', school_type: 'CommunityCollege', city: 'Irvine', state: 'CA' },
+    { name: 'Mission High School', school_type: 'HighSchool', city: 'San Francisco', state: 'CA' }
+  ]
+}
 
 describe('server queries', () => {
   test('returns seeded transfer metrics for the planner filters', () => {
-    const page = queryMetrics(LOCAL_SCHOLAR_DATA, {
+    const page = queryMetrics(TEST_DATA, {
       campus: 'UC Irvine',
       cohort: 'transfer',
       major: 'Mathematics',
@@ -18,7 +79,7 @@ describe('server queries', () => {
   })
 
   test('builds a freshman profile with sorted years', () => {
-    const profile = queryProfile(LOCAL_SCHOLAR_DATA, {
+    const profile = queryProfile(TEST_DATA, {
       campus: 'UCLA',
       cohort: 'freshman',
       discipline: 'Engineering',
@@ -30,7 +91,7 @@ describe('server queries', () => {
   })
 
   test('searches source schools without a database', () => {
-    const schools = querySourceSchools(LOCAL_SCHOLAR_DATA, {
+    const schools = querySourceSchools(TEST_DATA, {
       search: 'college',
       type: 'CommunityCollege'
     })

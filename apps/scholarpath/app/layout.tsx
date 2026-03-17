@@ -15,9 +15,22 @@ const displayFont = Space_Grotesk({
   variable: '--font-display'
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
 export const metadata = {
   title: 'ScholarStack',
-  description: 'ScholarHarvester and ScholarStack for evidence-backed California college planning.'
+  description: 'ScholarHarvester and ScholarStack for evidence-backed California college planning.',
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    title: 'ScholarStack',
+    description: 'Evidence-backed California college planning with transparent citations and provenance.',
+    type: 'website'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ScholarStack',
+    description: 'Evidence-backed California college planning with transparent citations and provenance.'
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -48,9 +61,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/ingest" className="hover:text-white">
                 AI Ingest
               </Link>
+              <Link href="/privacy" className="hover:text-white">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-white">
+                Terms
+              </Link>
+              <Link href="/contact" className="hover:text-white">
+                Contact
+              </Link>
             </div>
           </nav>
           {children}
+          <footer className="border-t border-white/10 bg-[color:rgba(4,8,18,0.8)]">
+            <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-slate-400">
+              <span>ScholarStack</span>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href="/privacy" className="hover:text-white">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="hover:text-white">
+                  Terms
+                </Link>
+                <Link href="/contact" className="hover:text-white">
+                  Contact
+                </Link>
+              </div>
+            </div>
+          </footer>
         </div>
       </body>
     </html>

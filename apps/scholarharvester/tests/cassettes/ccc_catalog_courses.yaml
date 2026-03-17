@@ -1,7 +1,7 @@
 http_interactions:
 - request:
     method: GET
-    uri: https://www.cccco.edu/catalog/robots.txt
+    uri: https://www.cccco.edu/robots.txt
     body:
       encoding: UTF-8
       string: ''

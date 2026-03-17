@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateAdvisorResponse } from '@/lib/server/openaiAdvisor'
+import { checkRateLimit } from '@/lib/server/rateLimiter'
+import { getRequestIp } from '@/lib/server/security'
 import type { AdvisorRequest } from '@/lib/types'
 
 function isAdvisorRequest(payload: any): payload is AdvisorRequest {
@@ -14,6 +16,18 @@ function isAdvisorRequest(payload: any): payload is AdvisorRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimit = checkRateLimit({
+    key: `advisor:${getRequestIp(request)}`,
+    max: 15,
+    windowMs: 5 * 60 * 1000
+  })
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded. Try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } }
+    )
+  }
+
   const payload = await request.json()
 
   if (!isAdvisorRequest(payload)) {

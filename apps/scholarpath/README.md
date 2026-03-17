@@ -1,6 +1,7 @@
 # ScholarStack App
 
-Next.js 15 + Tailwind UI + API Route Handlers for the ScholarStack website. The app now works without Supabase by default: it can serve bundled JSON data on Vercel, or read from a remote JSON endpoint if you want editable storage outside the repo.
+Next.js 15 + Tailwind UI + API Route Handlers for the ScholarStack website.
+The application is configured for live data and persistence through Supabase.
 
 ## Getting started
 
@@ -12,18 +13,23 @@ npm run dev
 
 Copy `.env.local.example` to `.env.local` and set:
 
+- `NEXT_PUBLIC_SITE_URL` base URL used by metadata/sitemap (for local: `http://localhost:3000`)
+- `NEXT_PUBLIC_SUPABASE_URL` your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` anon key (read-only fallback)
+- `SUPABASE_SERVICE_ROLE_KEY` required for ingest writes and cloud plan persistence
 - `OPENAI_API_KEY` to enable `/ingest` and planner AI guidance
 - `OPENAI_MODEL` optional override, default `gpt-5`
-- `SCHOLARSTACK_DATA_URL` optional remote JSON source for metrics/datasets/source schools
-- `SCHOLARSTACK_INGEST_WEBHOOK_URL` optional webhook for persistence after AI extraction
+- `SCHOLARSTACK_ADMIN_TOKEN` required by `/api/ingest` (send as `Authorization: Bearer <token>`)
+- `SCHOLARSTACK_DATA_URL` optional remote JSON source override (if you do not want direct Supabase reads)
 
-Legacy compatibility: `SCHOLARPATH_DATA_URL` and `SCHOLARPATH_INGEST_WEBHOOK_URL` are still accepted.
+Legacy compatibility: `SCHOLARPATH_DATA_URL` is still accepted.
 
 ## Storage model
 
-- Default: bundled local data shipped with the app. Good for a demo or curated read-only site on Vercel.
-- Remote JSON: point `SCHOLARSTACK_DATA_URL` at a JSON endpoint if you want updates without redeploying.
-- Google Sheets: Vercel does not provide durable local writes, so if you want operator-driven updates you still need an external store. A practical MVP is a Google Apps Script webhook that appends extracted rows to a Google Sheet, then publishes a JSON feed back to `SCHOLARSTACK_DATA_URL`.
+- Default: live Supabase reads from `dataset`, `metric`, `citation`, and `source_school`.
+- Ingest writes: `/api/ingest` upserts extracted datasets/metrics/citations into Supabase.
+- Planner cloud sync: `/api/plans` stores tasks/schedule snapshots in Supabase `user_plan`.
+- Optional: point `SCHOLARSTACK_DATA_URL` at a remote JSON feed to override Supabase reads.
 
 ## Tests
 

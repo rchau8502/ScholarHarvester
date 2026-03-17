@@ -15,7 +15,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npm run dev -- --hostname 127.0.0.1 --port 3000',
+    command:
+      'SCHOLARSTACK_DATA_URL=http://127.0.0.1:3000/e2e-data.json npm run dev -- --hostname 127.0.0.1 --port 3000',
     port: 3000,
     timeout: 120000,
   }

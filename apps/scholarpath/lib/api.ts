@@ -1,5 +1,13 @@
 import { buildQuery } from './buildQuery'
-import type { AdvisorRequest, AdvisorResponse, MetricPage, ProfileResponse, ProvenanceEntry, SourceSchool } from './types'
+import type {
+  AdvisorRequest,
+  AdvisorResponse,
+  CloudPlanRecord,
+  MetricPage,
+  ProfileResponse,
+  ProvenanceEntry,
+  SourceSchool
+} from './types'
 
 async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init)
@@ -40,5 +48,21 @@ export function getAdvisor(input: AdvisorRequest): Promise<AdvisorResponse> {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(input)
+  })
+}
+
+export async function getCloudPlan(planKey: string): Promise<CloudPlanRecord | null> {
+  const query = buildQuery({ plan_key: planKey })
+  const payload = await fetchJSON<{ plan: CloudPlanRecord | null }>(`/api/plans${query}`)
+  return payload.plan
+}
+
+export async function saveCloudPlan(plan: CloudPlanRecord): Promise<void> {
+  await fetchJSON('/api/plans', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(plan)
   })
 }

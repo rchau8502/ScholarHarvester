@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import EvidenceDrawer from '@/components/EvidenceDrawer'
-import { getAdvisor, getMetrics } from '@/lib/api'
+import { getAdvisor, getCloudPlan, getMetrics, saveCloudPlan } from '@/lib/api'
 import type { AdvisorResponse, Metric } from '@/lib/types'
 import {
   COMMUNITY_COLLEGES,
@@ -501,6 +501,10 @@ function PlannerPageContent() {
   const [scheduleTerms, setScheduleTerms] = useState<TermPlan[]>([])
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [courseDrafts, setCourseDrafts] = useState<Record<string, string>>({})
+  const [planLoaded, setPlanLoaded] = useState(false)
+  const [cloudPlanKey, setCloudPlanKey] = useState<string | null>(null)
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'idle' | 'loading' | 'syncing' | 'synced' | 'error'>('idle')
+  const [cloudSyncNote, setCloudSyncNote] = useState('')
 
   const planStorageSuffix = `${campus}:${cohort}:${focus}:${sourceSchool || 'all-schools'}:${schoolType || 'any-school-type'}`
   const planStorageKey = useMemo(
@@ -511,6 +515,20 @@ function PlannerPageContent() {
     () => `scholarpath-plan:${planStorageSuffix}`,
     [planStorageSuffix]
   )
+
+  useEffect(() => {
+    const userStorageKey = 'scholarstack-user-key'
+    let userKey = window.localStorage.getItem(userStorageKey)
+    if (!userKey) {
+      userKey =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `u-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      window.localStorage.setItem(userStorageKey, userKey)
+    }
+    setPlanLoaded(false)
+    setCloudPlanKey(`${userKey}:${planStorageSuffix}`)
+  }, [planStorageSuffix])
 
   useEffect(() => {
     const campusParam = searchParams.get('campus')
@@ -556,30 +574,79 @@ function PlannerPageContent() {
   useEffect(() => {
     const fallbackTasks = buildDefaultTasks({ cohort, campus, focus, sourceSchool })
     const fallbackSchedule = buildDefaultSchedule({ cohort, focus, plannedCourses })
+    let cancelled = false
+    setPlanLoaded(false)
 
-    try {
-      const raw = window.localStorage.getItem(planStorageKey) ?? window.localStorage.getItem(legacyPlanStorageKey)
-      if (!raw) {
+    async function hydratePlan() {
+      try {
+        const raw = window.localStorage.getItem(planStorageKey) ?? window.localStorage.getItem(legacyPlanStorageKey)
+        if (!raw) {
+          setPlanTasks(fallbackTasks)
+          setScheduleTerms(fallbackSchedule)
+        } else {
+          const parsed = JSON.parse(raw) as {
+            tasks?: PlannerTask[]
+            schedule?: TermPlan[]
+          }
+          setPlanTasks(parsed.tasks?.length ? parsed.tasks : fallbackTasks)
+          setScheduleTerms(parsed.schedule?.length ? parsed.schedule : fallbackSchedule)
+        }
+      } catch (error) {
+        console.error(error)
         setPlanTasks(fallbackTasks)
         setScheduleTerms(fallbackSchedule)
+      }
+
+      if (!cloudPlanKey) {
+        if (!cancelled) {
+          setPlanLoaded(true)
+          setCloudSyncStatus('idle')
+          setCloudSyncNote('')
+        }
         return
       }
 
-      const parsed = JSON.parse(raw) as {
-        tasks?: PlannerTask[]
-        schedule?: TermPlan[]
+      try {
+        setCloudSyncStatus('loading')
+        const cloudPlan = await getCloudPlan(cloudPlanKey)
+        if (cancelled) return
+
+        if (cloudPlan) {
+          setPlanTasks(Array.isArray(cloudPlan.tasks) ? (cloudPlan.tasks as PlannerTask[]) : fallbackTasks)
+          setScheduleTerms(Array.isArray(cloudPlan.schedule) ? (cloudPlan.schedule as TermPlan[]) : fallbackSchedule)
+          window.localStorage.setItem(
+            planStorageKey,
+            JSON.stringify({
+              tasks: cloudPlan.tasks,
+              schedule: cloudPlan.schedule
+            })
+          )
+          setCloudSyncStatus('synced')
+          setCloudSyncNote('Loaded cloud-synced plan state')
+        } else {
+          setCloudSyncStatus('synced')
+          setCloudSyncNote('Cloud sync connected')
+        }
+      } catch (error) {
+        if (cancelled) return
+        console.error(error)
+        setCloudSyncStatus('error')
+        setCloudSyncNote('Cloud sync unavailable. Using local backup.')
+      } finally {
+        if (!cancelled) {
+          setPlanLoaded(true)
+        }
       }
-      setPlanTasks(parsed.tasks?.length ? parsed.tasks : fallbackTasks)
-      setScheduleTerms(parsed.schedule?.length ? parsed.schedule : fallbackSchedule)
-    } catch (error) {
-      console.error(error)
-      setPlanTasks(fallbackTasks)
-      setScheduleTerms(fallbackSchedule)
     }
-  }, [planStorageKey, legacyPlanStorageKey, cohort, campus, focus, sourceSchool, plannedCourses])
+
+    hydratePlan()
+    return () => {
+      cancelled = true
+    }
+  }, [planStorageKey, legacyPlanStorageKey, cloudPlanKey, cohort, campus, focus, sourceSchool, plannedCourses])
 
   useEffect(() => {
-    if (!planTasks.length && !scheduleTerms.length) {
+    if (!planLoaded) {
       return
     }
 
@@ -590,7 +657,54 @@ function PlannerPageContent() {
         schedule: scheduleTerms
       })
     )
-  }, [planStorageKey, planTasks, scheduleTerms])
+
+    if (!cloudPlanKey) {
+      return
+    }
+
+    let cancelled = false
+    setCloudSyncStatus('syncing')
+    const timeout = window.setTimeout(async () => {
+      try {
+        await saveCloudPlan({
+          plan_key: cloudPlanKey,
+          campus,
+          cohort,
+          focus,
+          source_school: sourceSchool || null,
+          school_type: schoolType || null,
+          tasks: planTasks,
+          schedule: scheduleTerms
+        })
+        if (!cancelled) {
+          setCloudSyncStatus('synced')
+          setCloudSyncNote(`Synced ${new Date().toLocaleTimeString()}`)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error)
+          setCloudSyncStatus('error')
+          setCloudSyncNote('Could not sync cloud plan. Local backup still saved.')
+        }
+      }
+    }, 750)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeout)
+    }
+  }, [
+    planStorageKey,
+    planLoaded,
+    cloudPlanKey,
+    campus,
+    cohort,
+    focus,
+    sourceSchool,
+    schoolType,
+    planTasks,
+    scheduleTerms
+  ])
 
   useEffect(() => {
     const abort = new AbortController()
@@ -808,6 +922,12 @@ function PlannerPageContent() {
   const focusLabel = cohort === 'transfer' ? 'Transfer major' : 'Intended area of study'
   const sourceSchoolLabel = cohort === 'transfer' ? 'Transfer from' : 'Current high school'
   const sourceSchoolPlaceholder = cohort === 'transfer' ? 'All community colleges' : 'All high schools'
+  const syncToneClass =
+    cloudSyncStatus === 'error'
+      ? 'text-rose-300'
+      : cloudSyncStatus === 'syncing' || cloudSyncStatus === 'loading'
+        ? 'text-amber-200'
+        : 'text-emerald-200'
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
@@ -816,6 +936,10 @@ function PlannerPageContent() {
         <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Evidence-backed planning workspace</h1>
         <p className="mt-3 max-w-3xl text-sm text-slate-300">
           Build a clearer step-by-step plan for where you want to go, where you are coming from, and what to do next.
+        </p>
+        <p className={`mt-3 text-xs uppercase tracking-[0.18em] ${syncToneClass}`}>
+          Cloud sync: {cloudSyncStatus === 'idle' ? 'disabled' : cloudSyncStatus}
+          {cloudSyncNote ? ` - ${cloudSyncNote}` : ''}
         </p>
       </header>
 

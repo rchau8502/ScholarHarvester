@@ -1,0 +1,144 @@
+{
+  "datasets": [
+    {
+      "id": 1,
+      "title": "UC Transfer Metrics 2024",
+      "year": 2024,
+      "term": "Fall",
+      "cohort": "transfer",
+      "notes": "Playwright fixture dataset"
+    },
+    {
+      "id": 2,
+      "title": "UC Freshman Metrics 2024",
+      "year": 2024,
+      "term": "Fall",
+      "cohort": "freshman",
+      "notes": "Playwright fixture dataset"
+    }
+  ],
+  "metrics": [
+    {
+      "id": 1,
+      "dataset_id": 1,
+      "campus": "UC Irvine",
+      "major": "Mathematics",
+      "discipline": null,
+      "source_school": "Irvine Valley College",
+      "school_type": "CommunityCollege",
+      "cohort": "transfer",
+      "stat_name": "gpa_p25",
+      "stat_value_numeric": 3.1,
+      "stat_value_text": null,
+      "unit": null,
+      "percentile": "25",
+      "year": 2024,
+      "term": "Fall",
+      "notes": null,
+      "citations": [
+        {
+          "title": "UC Information Center",
+          "publisher": "University of California",
+          "year": 2024,
+          "source_url": "https://www.universityofcalifornia.edu/infocenter",
+          "interpretation_note": "Fixture citation"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "dataset_id": 1,
+      "campus": "UC Irvine",
+      "major": "Mathematics",
+      "discipline": null,
+      "source_school": "Irvine Valley College",
+      "school_type": "CommunityCollege",
+      "cohort": "transfer",
+      "stat_name": "gpa_p50",
+      "stat_value_numeric": 3.5,
+      "stat_value_text": null,
+      "unit": null,
+      "percentile": "50",
+      "year": 2024,
+      "term": "Fall",
+      "notes": null,
+      "citations": [
+        {
+          "title": "UC Information Center",
+          "publisher": "University of California",
+          "year": 2024,
+          "source_url": "https://www.universityofcalifornia.edu/infocenter",
+          "interpretation_note": "Fixture citation"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "dataset_id": 1,
+      "campus": "UC Irvine",
+      "major": "Mathematics",
+      "discipline": null,
+      "source_school": "Irvine Valley College",
+      "school_type": "CommunityCollege",
+      "cohort": "transfer",
+      "stat_name": "gpa_p75",
+      "stat_value_numeric": 3.8,
+      "stat_value_text": null,
+      "unit": null,
+      "percentile": "75",
+      "year": 2024,
+      "term": "Fall",
+      "notes": null,
+      "citations": [
+        {
+          "title": "UC Information Center",
+          "publisher": "University of California",
+          "year": 2024,
+          "source_url": "https://www.universityofcalifornia.edu/infocenter",
+          "interpretation_note": "Fixture citation"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "dataset_id": 1,
+      "campus": "UC Irvine",
+      "major": "Mathematics",
+      "discipline": null,
+      "source_school": "Irvine Valley College",
+      "school_type": "CommunityCollege",
+      "cohort": "transfer",
+      "stat_name": "admit_rate",
+      "stat_value_numeric": 41.2,
+      "stat_value_text": null,
+      "unit": "%",
+      "percentile": null,
+      "year": 2024,
+      "term": "Fall",
+      "notes": null,
+      "citations": [
+        {
+          "title": "UC Information Center",
+          "publisher": "University of California",
+          "year": 2024,
+          "source_url": "https://www.universityofcalifornia.edu/infocenter",
+          "interpretation_note": "Fixture citation"
+        }
+      ]
+    }
+  ],
+  "sourceSchools": [
+    {
+      "name": "Irvine Valley College",
+      "school_type": "CommunityCollege",
+      "city": "Irvine",
+      "state": "CA"
+    },
+    {
+      "name": "Lowell High School",
+      "school_type": "HighSchool",
+      "city": "San Francisco",
+      "state": "CA"
+    }
+  ]
+}

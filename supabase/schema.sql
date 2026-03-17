@@ -1,5 +1,7 @@
 -- ScholarStack Supabase schema
 
+create extension if not exists pgcrypto;
+
 -- Enums
 create type if not exists cohort as enum ('freshman','transfer');
 create type if not exists school_type as enum ('HighSchool','CommunityCollege','Other');
@@ -79,3 +81,21 @@ alter table source_school enable row level security;
 create policy "public read metrics" on metric for select using (true);
 create policy "public read citations" on citation for select using (true);
 create policy "public read source schools" on source_school for select using (true);
+
+-- Cloud-synced planner state
+create table if not exists user_plan(
+  id uuid primary key default gen_random_uuid(),
+  plan_key text unique not null,
+  campus text not null,
+  cohort cohort not null,
+  focus text not null,
+  source_school text,
+  school_type school_type,
+  tasks jsonb not null default '[]'::jsonb,
+  schedule jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists user_plan_updated_idx on user_plan(updated_at desc);
+alter table user_plan enable row level security;

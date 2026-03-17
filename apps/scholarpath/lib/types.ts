@@ -99,7 +99,7 @@ export interface IngestDraft {
 }
 
 export interface PersistenceResult {
-  mode: 'none' | 'webhook'
+  mode: 'none' | 'webhook' | 'supabase'
   status: 'not_configured' | 'skipped' | 'persisted' | 'failed'
   detail: string
 }
@@ -107,6 +107,18 @@ export interface PersistenceResult {
 export interface IngestResponse {
   extraction: IngestDraft
   persistence: PersistenceResult
+}
+
+export interface CloudPlanRecord {
+  plan_key: string
+  campus: string
+  cohort: 'transfer' | 'freshman'
+  focus: string
+  source_school: string | null
+  school_type: string | null
+  tasks: unknown[]
+  schedule: unknown[]
+  updated_at?: string
 }
 
 export interface AdvisorRequest {

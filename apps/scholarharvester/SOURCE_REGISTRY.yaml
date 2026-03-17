@@ -31,11 +31,11 @@ sources:
     allowed_mime: ["application/json", "text/csv"]
   - name: CCC Catalog Courses
     adapter: ccc_catalog_courses
-    base_url: https://www.cccco.edu/catalog
+    base_url: https://www.cccco.edu
     throttle_seconds: 2
     allowed_mime: ["text/html", "application/pdf"]
   - name: CCC Articulation PDFs
     adapter: ccc_articulation_pdfs
-    base_url: https://www.mtsac.edu
+    base_url: https://www.cccco.edu
     throttle_seconds: 2
     allowed_mime: ["application/pdf"]

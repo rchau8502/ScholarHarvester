@@ -14,7 +14,7 @@ const platformPillars = [
   {
     title: 'Evidence Layer',
     body:
-      'Supabase-ready storage and provenance records keep admissions signals tied to publisher, year, term, and interpretation instead of opaque numbers.'
+      'Live Supabase storage and provenance records keep admissions signals tied to publisher, year, term, and interpretation instead of opaque numbers.'
   }
 ]
 
@@ -46,7 +46,7 @@ const proofPoints = [
   'Official-source only adapters',
   'Citation and provenance on every metric',
   'Transfer and freshman planning flows',
-  'Vercel-friendly Next.js app with bundled demo data'
+  'Live Supabase-backed metrics and source-school search'
 ]
 
 export default function Home() {
@@ -125,7 +125,7 @@ export default function Home() {
                   </div>
                   <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
                     <div className="text-sm text-slate-400">Storage model</div>
-                    <div className="mt-2 text-xl font-semibold text-white">Bundled JSON or remote feed</div>
+                    <div className="mt-2 text-xl font-semibold text-white">Live Supabase + optional feed override</div>
                   </div>
                 </div>
                 <div className="rounded-3xl border border-sky-400/20 bg-[var(--cyan-soft)] p-5">
