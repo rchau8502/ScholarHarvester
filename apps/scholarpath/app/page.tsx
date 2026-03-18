@@ -9,7 +9,7 @@ const platformPillars = [
   {
     title: 'ScholarStack App',
     body:
-      'The Next.js application turns harvested data into a planner, source-school search, and AI-assisted ingest flow for operators and students.'
+      'The Next.js application turns harvested data into a planner, source-school search, and AI-assisted ingest flow for operators and students, with ASSIST-aligned transfer checks and freshman requirement guardrails.'
   },
   {
     title: 'Evidence Layer',
@@ -21,14 +21,14 @@ const platformPillars = [
 const workflowSteps = [
   'Collect official exports, APIs, and public datasets with legal guardrails.',
   'Normalize metrics, attach citations, and write provenance for every update.',
-  'Surface the data in planning tools that make tradeoffs and source evidence visible.'
+  'Surface the data in planning tools that make ASSIST, freshman requirements, and source evidence visible.'
 ]
 
 const productRoutes = [
   {
     href: '/planner',
     title: 'Planner',
-    detail: 'Compare campuses, majors, and cohorts with evidence-backed metrics.'
+    detail: 'Compare campuses, majors, and cohorts with evidence-backed metrics, official checkpoints, and a model-student profile.'
   },
   {
     href: '/search',
@@ -45,7 +45,8 @@ const productRoutes = [
 const proofPoints = [
   'Official-source only adapters',
   'Citation and provenance on every metric',
-  'Transfer and freshman planning flows',
+  'ASSIST-aligned transfer planning',
+  'UC and CSU freshman requirement guardrails',
   'Live Supabase-backed metrics and source-school search'
 ]
 
@@ -59,12 +60,13 @@ export default function Home() {
               ScholarStack monorepo
             </div>
             <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl">
-              Evidence-backed college planning from data harvest to student-facing product.
+              Evidence-backed college planning that tracks official requirements, not just generic advice.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--page-muted)]">
               This repository combines ScholarHarvester, a guarded data pipeline for California admissions signals,
               with ScholarStack, a Next.js interface that exposes those signals through planning, search, and ingest
-              workflows.
+              workflows. The website now anchors transfer planning to ASSIST and freshman planning to official
+              first-year requirement pages.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -115,7 +117,7 @@ export default function Home() {
                   <div className="mt-2 text-3xl font-semibold text-white">Harvest -&gt; Cite -&gt; Plan</div>
                   <p className="mt-3 text-sm leading-7 text-slate-300">
                     The repo is built to move from official-source extraction to explainable planning outputs without
-                    dropping year, term, or provenance context.
+                    dropping year, term, provenance, or official admissions context.
                   </p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -131,8 +133,8 @@ export default function Home() {
                 <div className="rounded-3xl border border-sky-400/20 bg-[var(--cyan-soft)] p-5">
                   <div className="text-sm text-slate-300">Why this matters</div>
                   <p className="mt-2 text-sm leading-7 text-slate-100">
-                    Admissions dashboards are only useful if the underlying numbers can be traced back to a specific
-                    source and interpretation. This stack keeps that evidence attached.
+                    A planning tool is only useful if the student can see the official rule set behind the advice.
+                    This stack keeps metrics, citations, ASSIST references, and freshman checkpoints attached.
                   </p>
                 </div>
               </div>
@@ -157,11 +159,12 @@ export default function Home() {
         <div>
           <div className="text-xs uppercase tracking-[0.24em] text-slate-400">What this repo does</div>
           <h2 className="mt-4 max-w-xl text-4xl font-semibold tracking-tight text-white">
-            It is a full data-to-product workflow, not just a static admissions dashboard.
+            It is a full data-to-product workflow, not another generic admissions chatbot.
           </h2>
           <p className="mt-5 max-w-xl text-base leading-8 text-slate-300">
             ScholarStack starts with harvesting and compliance rules, then moves through normalization and provenance,
-            and ends in interfaces that help students or operators make decisions with context.
+            and ends in interfaces that help students or operators make decisions with context, official checkpoints,
+            and school-and-major-specific profile guidance.
           </p>
         </div>
         <div className="grid gap-4">

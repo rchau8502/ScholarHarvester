@@ -1,3 +1,4 @@
+import { getCampusSegment, getOfficialRequirementSummaries, getOfficialResources } from '@/lib/admissionsGuidance'
 import type { AdvisorRequest, AdvisorResponse } from '@/lib/types'
 
 const advisorSchema = {
@@ -150,6 +151,13 @@ export async function generateAdvisorResponse(request: AdvisorRequest): Promise<
 
   const model = process.env.OPENAI_MODEL || 'gpt-5'
   const focusGuidance = buildFocusGuidance(request.focus)
+  const campusSegment = getCampusSegment(request.campus)
+  const officialResources = getOfficialResources(request.campus, request.cohort)
+  const officialSummaries = getOfficialRequirementSummaries({
+    campus: request.campus,
+    cohort: request.cohort,
+    focus: request.focus
+  })
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -168,6 +176,7 @@ export async function generateAdvisorResponse(request: AdvisorRequest): Promise<
           role: 'user',
           content: [
             `Campus: ${request.campus}`,
+            `Campus segment: ${campusSegment ?? 'unknown'}`,
             `Cohort: ${request.cohort}`,
             `Focus: ${request.focus}`,
             `Source school: ${request.sourceSchool ?? 'n/a'}`,
@@ -183,6 +192,8 @@ export async function generateAdvisorResponse(request: AdvisorRequest): Promise<
             `Target activities: ${(request.targetActivities ?? []).join(', ') || 'none provided'}`,
             `Suggested coursework patterns for ${request.focus}: ${focusGuidance.coursework.join(', ')}`,
             `Suggested activity patterns for ${request.focus}: ${focusGuidance.activities.join(', ')}`,
+            `Official planning resources: ${officialResources.map((resource) => `${resource.label} (${resource.url})`).join('; ')}`,
+            `Official requirement summaries: ${officialSummaries.map((item) => `${item.title}: ${item.detail}`).join(' | ')}`,
             'Available metrics JSON:',
             JSON.stringify(
               request.metrics.map((metric) => ({
@@ -198,6 +209,8 @@ export async function generateAdvisorResponse(request: AdvisorRequest): Promise<
             'For freshmen, emphasize GPA rigor, AP/advanced coursework, and extracurricular profile.',
             'For both, explain what kind of student profile is more competitive relative to the visible metrics, suggest concrete classes to prioritize, and suggest concrete activities, events, projects, leadership, or service that strengthen the profile.',
             'Make the output richer than generic admissions advice.',
+            'When you describe a typical accepted student profile, tie it to the loaded metrics first, then to the official requirement summaries above.',
+            'If a profile trait is inferred rather than directly stated by a source or metric, keep the wording comparative and non-absolute.',
             'Array length targets:',
             '- strengths: 3 to 5 items',
             '- cautions: 3 to 5 items',

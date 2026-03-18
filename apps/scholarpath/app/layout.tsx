@@ -61,15 +61,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/ingest" className="hover:text-white">
                 AI Ingest
               </Link>
-              <Link href="/privacy" className="hover:text-white">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-white">
-                Terms
-              </Link>
-              <Link href="/contact" className="hover:text-white">
-                Contact
-              </Link>
             </div>
           </nav>
           {children}

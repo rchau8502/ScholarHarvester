@@ -14,7 +14,10 @@ export default function ContactPage() {
             operations team.
           </p>
           <p>
-            Email: <a className="text-amber-200 underline" href="mailto:support@scholarstack.app">support@scholarstack.app</a>
+            Email:{' '}
+            <a className="text-amber-200 underline" href="mailto:rich.chao288@gmail.com">
+              rich.chao288@gmail.com
+            </a>
           </p>
           <p>When reporting a data issue, include campus, cohort, year, and a source URL so we can verify quickly.</p>
         </div>

@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "postinstall": "node scripts/repair-next-webpack-shims.js",
+    "build": "node scripts/repair-next-webpack-shims.js && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "vitest",
     "test:e2e": "playwright test"
   },

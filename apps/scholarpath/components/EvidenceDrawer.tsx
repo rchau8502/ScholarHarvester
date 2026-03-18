@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { getProfile, getProvenance } from '@/lib/api'
+import { getOfficialResources } from '@/lib/admissionsGuidance'
 import type { ProvenanceEntry, ProfileResponse } from '@/lib/types'
 
 interface EvidenceDrawerProps {
@@ -81,6 +82,7 @@ export default function EvidenceDrawer({
       ? 'Warning: Some evidence is older than three years.'
       : null
   }, [profile])
+  const officialResources = useMemo(() => getOfficialResources(campus, cohort), [campus, cohort])
 
   if (!open) {
     return null
@@ -108,6 +110,19 @@ export default function EvidenceDrawer({
             <div>
               <p className="text-sm text-slate-400">Profile years</p>
               <p className="text-lg font-semibold text-white">{profile.years.join(', ') || 'n/a'}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-3">
+              <p className="text-sm font-semibold text-slate-100">Official planning links</p>
+              <div className="mt-3 space-y-3">
+                {officialResources.map((resource) => (
+                  <div key={resource.url}>
+                    <a href={resource.url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-amber-300 underline">
+                      {resource.label}
+                    </a>
+                    <p className="mt-1 text-xs text-slate-400">{resource.note}</p>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="space-y-3">
               {profile.metrics.map((metric) => (

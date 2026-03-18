@@ -4,6 +4,12 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import EvidenceDrawer from '@/components/EvidenceDrawer'
 import { getAdvisor, getCloudPlan, getMetrics, saveCloudPlan } from '@/lib/api'
+import {
+  getModelStudentProfile,
+  getOfficialRequirementSummaries,
+  getOfficialResources,
+  type OfficialResource
+} from '@/lib/admissionsGuidance'
 import type { AdvisorResponse, Metric } from '@/lib/types'
 import {
   COMMUNITY_COLLEGES,
@@ -121,6 +127,8 @@ type PlannerReadout = {
   readinessTone: string
   readinessSummary: string
   competitivenessSummary: string
+  officialRequirements: RequirementItem[]
+  officialResources: OfficialResource[]
   requirementItems: RequirementItem[]
   acceptedProfile: string[]
   nextTermPlan: string[]
@@ -401,20 +409,28 @@ function buildPlannerReadout(input: {
           }
         ]
 
-  const acceptedProfile = [
-    gpaP50 != null
-      ? `Past admits in this view were roughly around a ${gpaP25?.toFixed(2) ?? '--'} to ${gpaP75?.toFixed(2) ?? '--'} GPA band, with the middle of the cohort near ${gpaP50.toFixed(2)}.`
-      : 'There is not enough GPA data loaded yet to benchmark this path.',
-    admitRate != null
-      ? `The visible admit rate is ${admitRate.toFixed(1)}%, so this path should be treated as ${admitRate < 25 ? 'highly selective' : admitRate < 45 ? 'competitive' : 'more attainable but still not automatic'}.`
-      : 'Admit rate is not available for this combination yet.',
-    input.cohort === 'transfer'
-      ? 'The strongest transfer applicants usually complete both transfer patterns and major prerequisites before filing the application.'
-      : 'The strongest freshman applicants usually combine grades, rigor, and a credible story about why they fit the intended field.',
-    input.sourceSchool
-      ? `Because you selected ${input.sourceSchool}, the readout is grounded in that source-school pathway instead of a statewide average.`
-      : 'Because you did not select a source school, this readout reflects the broader bundled cohort rather than your exact pipeline.'
-  ]
+  const officialRequirements = getOfficialRequirementSummaries({
+    campus: input.campus,
+    cohort: input.cohort,
+    focus: input.focus
+  }).map((item) => ({
+    title: item.title,
+    detail: item.detail,
+    status: 'in_progress' as const
+  }))
+
+  const officialResources = getOfficialResources(input.campus, input.cohort)
+
+  const acceptedProfile = getModelStudentProfile({
+    campus: input.campus,
+    cohort: input.cohort,
+    focus: input.focus,
+    sourceSchool: input.sourceSchool,
+    admitRate,
+    gpaP25,
+    gpaP50,
+    gpaP75
+  })
 
   const nextTermPlan =
     input.scheduleTerms.slice(0, 2).flatMap((term) =>
@@ -461,6 +477,8 @@ function buildPlannerReadout(input: {
               ? 'Right now your GPA looks closer to the lower end of the visible admit band. This is still possible, but you need stronger execution elsewhere.'
               : 'Right now your GPA sits below the visible admit band, so this path looks weak unless you improve the academics or broaden your school list.'
         : 'Add your GPA to compare your current position against the past admit band.',
+    officialRequirements,
+    officialResources,
     requirementItems,
     acceptedProfile,
     nextTermPlan,
@@ -1217,14 +1235,38 @@ function PlannerPageContent() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid gap-4 xl:grid-cols-3">
           <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
             <p className="text-sm font-semibold text-fuchsia-300">How competitive you are</p>
             <p className="mt-2 text-sm text-slate-200">{plannerReadout.competitivenessSummary}</p>
           </div>
           <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
-            <p className="text-sm font-semibold text-cyan-300">What accepted applicants usually look like</p>
+            <p className="text-sm font-semibold text-cyan-300">Model student profile</p>
             <AdviceList items={plannerReadout.acceptedProfile} />
+          </div>
+          <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+            <p className="text-sm font-semibold text-emerald-300">Official checkpoints</p>
+            <div className="mt-3 space-y-3">
+              {plannerReadout.officialRequirements.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-slate-800 px-3 py-3">
+                  <p className="text-sm font-semibold text-slate-100">{item.title}</p>
+                  <p className="mt-2 text-sm text-slate-300">{item.detail}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {plannerReadout.officialResources.map((resource) => (
+                <a
+                  key={resource.url}
+                  href={resource.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-200 transition hover:border-emerald-300/60 hover:text-white"
+                >
+                  {resource.label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -1266,6 +1308,24 @@ function PlannerPageContent() {
             <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
               <p className="text-sm font-semibold text-emerald-300">Application strategy</p>
               <AdviceList items={plannerReadout.applicationStrategy} />
+            </div>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950 p-4">
+              <p className="text-sm font-semibold text-slate-200">Source alignment</p>
+              <div className="mt-3 space-y-3">
+                {plannerReadout.officialResources.map((resource) => (
+                  <div key={resource.label} className="rounded-2xl border border-slate-800 px-3 py-3">
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-semibold text-amber-200 underline decoration-amber-400/40 underline-offset-4"
+                    >
+                      {resource.label}
+                    </a>
+                    <p className="mt-2 text-sm text-slate-300">{resource.note}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
