@@ -3,10 +3,12 @@ import type {
   AdvisorRequest,
   AdvisorResponse,
   CloudPlanRecord,
+  Institution,
+  InstitutionSearchResponse,
   MetricPage,
   ProfileResponse,
   ProvenanceEntry,
-  SourceSchool
+  SourceSchoolSearchResponse
 } from './types'
 
 async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
@@ -32,13 +34,25 @@ export function getProvenance(params: Record<string, unknown>): Promise<Provenan
   return fetchJSON(`/api/provenance${query}`)
 }
 
-export function searchSourceSchools(query: string, type?: string): Promise<SourceSchool[]> {
+export function searchSourceSchools(query: string, type?: string, state?: string): Promise<SourceSchoolSearchResponse> {
   const params: Record<string, string> = { search: query }
   if (type) {
     params.type = type
   }
+  if (state) {
+    params.state = state
+  }
   const q = buildQuery(params)
   return fetchJSON(`/api/source-schools${q}`)
+}
+
+export function searchInstitutions(params: Record<string, string | number | undefined>): Promise<InstitutionSearchResponse> {
+  const q = buildQuery(params as Record<string, string | number | readonly string[] | undefined>)
+  return fetchJSON(`/api/institutions${q}`)
+}
+
+export function getInstitution(externalId: string): Promise<{ institution: Institution | null }> {
+  return fetchJSON(`/api/institutions/${encodeURIComponent(externalId)}`)
 }
 
 export function getAdvisor(input: AdvisorRequest): Promise<AdvisorResponse> {

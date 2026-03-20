@@ -36,6 +36,11 @@ const productRoutes = [
     detail: 'Find source institutions and feed them into the planning flow.'
   },
   {
+    href: '/colleges',
+    title: 'Colleges',
+    detail: 'Browse a national college directory backed by official College Scorecard fields.'
+  },
+  {
     href: '/ingest',
     title: 'AI Ingest',
     detail: 'Turn raw admissions text into structured metrics through the Responses API.'
@@ -45,6 +50,7 @@ const productRoutes = [
 const proofPoints = [
   'Official-source only adapters',
   'Citation and provenance on every metric',
+  'National college directory via official public data',
   'ASSIST-aligned transfer planning',
   'UC and CSU freshman requirement guardrails',
   'Live Supabase-backed metrics and source-school search'
@@ -76,8 +82,14 @@ export default function Home() {
                 Open Planner
               </Link>
               <Link
-                href="/search"
+                href="/colleges"
                 className="rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Explore Colleges
+              </Link>
+              <Link
+                href="/search"
+                className="rounded-full border border-white/15 bg-transparent px-5 py-3 text-sm font-semibold text-slate-300 transition hover:border-white/30 hover:text-white"
               >
                 Browse Source Schools
               </Link>
@@ -190,7 +202,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {productRoutes.map((route) => (
               <Link
                 key={route.href}

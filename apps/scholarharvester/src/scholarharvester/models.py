@@ -160,6 +160,39 @@ class SourceSchool(Base):
     city = Column(String, nullable=True)
     state = Column(String, nullable=True)
 
+
+class Institution(Base):
+    __tablename__ = "institution"
+
+    id = Column(Integer, primary_key=True)
+    external_id = Column(String, nullable=False, unique=True)
+    source = Column(String, nullable=False, default="College Scorecard")
+    name = Column(String, nullable=False, index=True)
+    city = Column(String, nullable=True)
+    state = Column(String, nullable=True, index=True)
+    zip = Column(String, nullable=True)
+    control = Column(String, nullable=True, index=True)
+    locale = Column(String, nullable=True)
+    locale_code = Column(Integer, nullable=True)
+    carnegie_basic = Column(String, nullable=True)
+    highest_degree = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    price_calculator_url = Column(String, nullable=True)
+    student_size = Column(Integer, nullable=True)
+    admission_rate = Column(Numeric, nullable=True)
+    sat_average = Column(Integer, nullable=True)
+    act_midpoint = Column(Numeric, nullable=True)
+    avg_net_price = Column(Integer, nullable=True)
+    tuition_in_state = Column(Integer, nullable=True)
+    tuition_out_of_state = Column(Integer, nullable=True)
+    federal_aid_rate = Column(Numeric, nullable=True)
+    completion_rate = Column(Numeric, nullable=True)
+    retention_rate = Column(Numeric, nullable=True)
+    median_earnings_10yr = Column(Integer, nullable=True)
+    latitude = Column(Numeric, nullable=True)
+    longitude = Column(Numeric, nullable=True)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+
 class Runlog(Base):
     __tablename__ = "runlog"
 

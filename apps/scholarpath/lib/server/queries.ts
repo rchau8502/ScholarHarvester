@@ -1,4 +1,12 @@
-import type { Citation, DatasetEntry, Metric, ProvenanceEntry, ScholarDataBundle, SourceSchool } from '@/lib/types'
+import type {
+  Citation,
+  DatasetEntry,
+  Metric,
+  ProvenanceEntry,
+  ScholarDataBundle,
+  SourceSchool,
+  SourceSchoolSearchResponse
+} from '@/lib/types'
 
 function sortMetrics(metrics: Metric[]) {
   return [...metrics].sort((left, right) => left.id - right.id)
@@ -160,19 +168,62 @@ export function queryProvenance(
     .slice(0, 25)
 }
 
+function enrichSourceSchool(data: ScholarDataBundle, school: SourceSchool): SourceSchool {
+  const matchingMetrics = data.metrics.filter(
+    (metric) => metric.source_school === school.name && metric.school_type === school.school_type
+  )
+  const campusCount = new Set(matchingMetrics.map((metric) => metric.campus)).size
+  const latestYear = matchingMetrics.length ? Math.max(...matchingMetrics.map((metric) => metric.year)) : null
+  const cohorts = Array.from(new Set(matchingMetrics.map((metric) => metric.cohort))).sort()
+
+  return {
+    ...school,
+    campus_count: campusCount,
+    metric_count: matchingMetrics.length,
+    latest_year: latestYear,
+    cohorts
+  }
+}
+
 export function querySourceSchools(
   data: ScholarDataBundle,
-  params: { search?: string | null; type?: string | null }
-): SourceSchool[] {
+  params: { search?: string | null; type?: string | null; state?: string | null }
+): SourceSchoolSearchResponse {
   const search = params.search?.trim().toLowerCase()
 
-  return data.sourceSchools
-    .filter((school) => {
-      if (params.type && school.school_type !== params.type) return false
-      if (search && !`${school.name} ${school.city ?? ''} ${school.state ?? ''}`.toLowerCase().includes(search)) {
-        return false
-      }
-      return true
+  const typedSchools = data.sourceSchools
+    .filter((school) => !params.type || school.school_type === params.type)
+    .map((school) => enrichSourceSchool(data, school))
+
+  const searchedSchools = typedSchools.filter((school) => {
+    if (search && !`${school.name} ${school.city ?? ''} ${school.state ?? ''}`.toLowerCase().includes(search)) {
+      return false
+    }
+    return true
+  })
+
+  const states = Array.from(
+    searchedSchools.reduce((counts, school) => {
+      const value = school.state?.trim()
+      if (!value) return counts
+      counts.set(value, (counts.get(value) ?? 0) + 1)
+      return counts
+    }, new Map<string, number>())
+  )
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value))
+
+  const filteredSchools = searchedSchools
+    .filter((school) => !params.state || school.state === params.state)
+    .sort((left, right) => {
+      const coverageDelta = (right.campus_count ?? 0) - (left.campus_count ?? 0)
+      if (coverageDelta !== 0) return coverageDelta
+      return left.name.localeCompare(right.name)
     })
-    .slice(0, 25)
+
+  return {
+    items: filteredSchools.slice(0, 25),
+    total: filteredSchools.length,
+    states
+  }
 }

@@ -30,6 +30,7 @@ For deterministic official pulls, set these environment variables to official CS
 - `SCHOLARSTACK_CCCCO_TRANSFER_CSV_URL`
 - `SCHOLARSTACK_CCC_CATALOG_CSV_URL`
 - `SCHOLARSTACK_CCC_ARTICULATION_CSV_URL`
+- `COLLEGE_SCORECARD_API_KEY` for national institution sync via the official College Scorecard API
 
 If a URL is not set, adapters try to discover an export link from the official base domain, but explicit URLs are recommended for production stability.
 
@@ -37,6 +38,24 @@ Before your first official harvest, clear old synthetic rows:
 
 ```sh
 psql "$SUPABASE_DB_DSN" -f ../../supabase/cleanup_demo.sql
+```
+
+## National institution sync
+
+To populate a national college directory from the official College Scorecard API:
+
+```sh
+cd apps/scholarharvester
+alembic upgrade head
+poetry run scholarharvester institutions sync-scorecard --max-records 3500
+```
+
+Use `--state CA` to scope the import or omit `--max-records` to continue through the full dataset.
+
+If you are applying the schema directly in Supabase rather than through Alembic, run:
+
+```sh
+psql "$SUPABASE_DB_DSN" -f ../../supabase/institution_migration.sql
 ```
 
 ## Source registry

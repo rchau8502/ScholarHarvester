@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const search = url.searchParams.get('search')
   const type = url.searchParams.get('type')
+  const state = url.searchParams.get('state')
   const data = await getScholarData()
-  return NextResponse.json(querySourceSchools(data, { search, type }))
+  return NextResponse.json(querySourceSchools(data, { search, type, state }))
 }

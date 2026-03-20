@@ -21,6 +21,9 @@ export const metadata = {
   title: 'ScholarStack',
   description: 'ScholarHarvester and ScholarStack for evidence-backed California college planning.',
   metadataBase: new URL(siteUrl),
+  icons: {
+    icon: '/icon.svg'
+  },
   openGraph: {
     title: 'ScholarStack',
     description: 'Evidence-backed California college planning with transparent citations and provenance.',
@@ -57,6 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <Link href="/search" className="hover:text-white">
                 Source Schools
+              </Link>
+              <Link href="/colleges" className="hover:text-white">
+                Colleges
               </Link>
               <Link href="/ingest" className="hover:text-white">
                 AI Ingest

@@ -64,6 +64,58 @@ export interface SourceSchool {
   school_type: string
   city?: string | null
   state?: string | null
+  campus_count?: number
+  metric_count?: number
+  latest_year?: number | null
+  cohorts?: string[]
+}
+
+export interface SourceSchoolFacet {
+  value: string
+  count: number
+}
+
+export interface SourceSchoolSearchResponse {
+  items: SourceSchool[]
+  total: number
+  states: SourceSchoolFacet[]
+}
+
+export interface Institution {
+  external_id: string
+  source: string
+  name: string
+  city?: string | null
+  state?: string | null
+  zip?: string | null
+  control?: string | null
+  locale?: string | null
+  locale_code?: number | null
+  carnegie_basic?: string | null
+  highest_degree?: string | null
+  website?: string | null
+  price_calculator_url?: string | null
+  student_size?: number | null
+  admission_rate?: number | null
+  sat_average?: number | null
+  act_midpoint?: number | null
+  avg_net_price?: number | null
+  tuition_in_state?: number | null
+  tuition_out_of_state?: number | null
+  federal_aid_rate?: number | null
+  completion_rate?: number | null
+  retention_rate?: number | null
+  median_earnings_10yr?: number | null
+  latitude?: number | null
+  longitude?: number | null
+  updated_at?: string
+}
+
+export interface InstitutionSearchResponse {
+  items: Institution[]
+  total: number
+  page: number
+  per_page: number
 }
 
 export interface ScholarDataBundle {

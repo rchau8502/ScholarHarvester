@@ -17,6 +17,7 @@ class Config:
     user_agent: str = os.environ.get(
         "SCHOLAR_HARVESTER_USER_AGENT", "ScholarHarvester/1.0 (+contact@scholarstack.org)"
     )
+    college_scorecard_api_key: str = os.environ.get("COLLEGE_SCORECARD_API_KEY", "")
     legal_notes_path: str = "LEGAL_NOTES.md"
     provenance_path: str = "DATA_PROVENANCE.md"
 

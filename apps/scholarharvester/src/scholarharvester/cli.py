@@ -4,17 +4,21 @@ import asyncio
 from typing import Optional
 
 import typer
-from sqlalchemy import select
+from sqlalchemy import func, select
 
+from scholarharvester.config import config
 from scholarharvester.database import get_session
-from scholarharvester.models import Citation, Dataset, Metric, Runlog
-from scholarharvester.registry import load_sources
+from scholarharvester.models import Citation, Dataset, Institution, Metric
+from scholarharvester.services.college_scorecard import sync_college_scorecard
 from scholarharvester.services.runner import list_adapters, run_adapter
 
 app = typer.Typer(help="ScholarHarvester CLI")
 
 data_app = typer.Typer()
 app.add_typer(data_app, name="harvest")
+
+institutions_app = typer.Typer()
+app.add_typer(institutions_app, name="institutions")
 
 @data_app.command("list")
 def _list_adapters() -> None:
@@ -73,4 +77,39 @@ def replay(dataset_id: int) -> None:
                 raise typer.Exit(code=1)
             typer.echo(f"Replaying adapter {adapter_name} for dataset {dataset.id}")
             await run_adapter(adapter_name, {"campus": dataset.metrics[0].campus}, False)
+    asyncio.run(_inner())
+
+
+@institutions_app.command("sync-scorecard")
+def sync_scorecard(
+    max_records: Optional[int] = typer.Option(None, help="Optional max number of institutions to import"),
+    per_page: int = typer.Option(100, min=1, max=100, help="API page size"),
+    state: Optional[str] = typer.Option(None, help="Optional two-letter state filter"),
+) -> None:
+    api_key = config.college_scorecard_api_key
+    if not api_key:
+        typer.echo("COLLEGE_SCORECARD_API_KEY is required")
+        raise typer.Exit(code=1)
+
+    summary = asyncio.run(
+        sync_college_scorecard(
+            api_key=api_key,
+            per_page=per_page,
+            max_records=max_records,
+            state=state,
+        )
+    )
+    typer.echo(
+        f"Imported {summary['imported']} institutions across {summary['pages']} pages"
+        + (f" (source total: {summary['source_total']})" if summary["source_total"] is not None else "")
+    )
+
+
+@institutions_app.command("count")
+def count_institutions() -> None:
+    async def _inner() -> None:
+        async with get_session() as session:
+            total = await session.scalar(select(func.count()).select_from(Institution))
+            typer.echo(str(total or 0))
+
     asyncio.run(_inner())
