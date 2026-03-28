@@ -3,6 +3,7 @@ import type {
   AdvisorRequest,
   AdvisorResponse,
   CloudPlanRecord,
+  InstitutionDirectoryStatus,
   Institution,
   InstitutionSearchResponse,
   MetricPage,
@@ -53,6 +54,10 @@ export function searchInstitutions(params: Record<string, string | number | unde
 
 export function getInstitution(externalId: string): Promise<{ institution: Institution | null }> {
   return fetchJSON(`/api/institutions/${encodeURIComponent(externalId)}`)
+}
+
+export function getInstitutionDirectoryStatus(): Promise<InstitutionDirectoryStatus> {
+  return fetchJSON('/api/institutions/status')
 }
 
 export function getAdvisor(input: AdvisorRequest): Promise<AdvisorResponse> {

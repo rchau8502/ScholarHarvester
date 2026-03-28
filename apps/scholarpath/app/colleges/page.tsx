@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import { searchInstitutions } from '@/lib/api'
-import type { Institution } from '@/lib/types'
+import { getInstitutionDirectoryStatus, searchInstitutions } from '@/lib/api'
+import type { Institution, InstitutionDirectoryStatus } from '@/lib/types'
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY',
@@ -32,7 +32,28 @@ export default function CollegesPage() {
   const [page, setPage] = useState(1)
   const [results, setResults] = useState<Institution[]>([])
   const [total, setTotal] = useState(0)
+  const [status, setStatus] = useState<InstitutionDirectoryStatus | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadStatus() {
+      try {
+        const payload = await getInstitutionDirectoryStatus()
+        if (!cancelled) {
+          setStatus(payload)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    loadStatus()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -139,12 +160,35 @@ export default function CollegesPage() {
             {loading ? 'Loading…' : `${total} colleges matched`}
           </span>
           <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Source: College Scorecard</span>
+          {status && (
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+              Directory rows: {status.institution_count}
+            </span>
+          )}
         </div>
       </section>
 
+      {status && !status.configured && (
+        <section className="glass-panel rounded-3xl border border-amber-400/20 bg-[var(--accent-soft)] p-6 text-sm text-slate-100">
+          Local college-directory reads are not configured. Missing env: {status.missing_env.join(', ')}.
+        </section>
+      )}
+
+      {status?.configured && status.missing_table && (
+        <section className="glass-panel rounded-3xl border border-amber-400/20 bg-[var(--accent-soft)] p-6 text-sm text-slate-100">
+          The `institution` table is not available yet. Run the institution migration before using the college explorer.
+        </section>
+      )}
+
+      {status?.configured && !status.missing_table && status.institution_count === 0 && (
+        <section className="glass-panel rounded-3xl border border-sky-400/20 bg-[var(--cyan-soft)] p-6 text-sm text-slate-100">
+          The directory is configured but empty. Run the College Scorecard sync to populate national college records.
+        </section>
+      )}
+
       {!loading && !results.length && (
         <section className="glass-panel rounded-3xl p-6 text-sm text-slate-300">
-          No colleges are available yet for this filter. Run the Scorecard sync first if the directory has not been populated.
+          No colleges are available yet for this filter.
         </section>
       )}
 

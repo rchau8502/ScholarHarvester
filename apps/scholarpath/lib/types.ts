@@ -118,6 +118,13 @@ export interface InstitutionSearchResponse {
   per_page: number
 }
 
+export interface InstitutionDirectoryStatus {
+  configured: boolean
+  missing_table: boolean
+  institution_count: number
+  missing_env: string[]
+}
+
 export interface ScholarDataBundle {
   datasets: DatasetEntry[]
   metrics: Metric[]

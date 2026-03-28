@@ -1,4 +1,4 @@
-import type { Institution, InstitutionSearchResponse } from '@/lib/types'
+import type { Institution, InstitutionDirectoryStatus, InstitutionSearchResponse } from '@/lib/types'
 import { getSupabaseReadClient } from '@/lib/server/supabaseServer'
 
 type InstitutionRow = {
@@ -68,6 +68,66 @@ function mapInstitution(row: InstitutionRow): Institution {
 
 function isMissingInstitutionTable(message: string | undefined) {
   return !!message && (message.includes('institution') && (message.includes('does not exist') || message.includes('schema cache')))
+}
+
+function getMissingInstitutionEnv() {
+  const missing: string[] = []
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    missing.push('NEXT_PUBLIC_SUPABASE_URL')
+  }
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    missing.push('SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  }
+  return missing
+}
+
+export async function getInstitutionDirectoryStatus(): Promise<InstitutionDirectoryStatus> {
+  const missingEnv = getMissingInstitutionEnv()
+  if (missingEnv.length) {
+    return {
+      configured: false,
+      missing_table: false,
+      institution_count: 0,
+      missing_env: missingEnv
+    }
+  }
+
+  try {
+    const supabase = getSupabaseReadClient()
+    const { count, error } = await supabase.from('institution').select('id', { count: 'exact', head: true })
+
+    if (error) {
+      if (isMissingInstitutionTable(error.message)) {
+        return {
+          configured: true,
+          missing_table: true,
+          institution_count: 0,
+          missing_env: []
+        }
+      }
+      throw new Error(`Failed loading institution status: ${error.message}`)
+    }
+
+    return {
+      configured: true,
+      missing_table: false,
+      institution_count: count ?? 0,
+      missing_env: []
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      const missing = getMissingInstitutionEnv()
+      if (missing.length) {
+        return {
+          configured: false,
+          missing_table: false,
+          institution_count: 0,
+          missing_env: missing
+        }
+      }
+    }
+    throw error
+  }
 }
 
 export async function searchInstitutionsInSupabase(params: {
