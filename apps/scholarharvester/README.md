@@ -14,6 +14,7 @@ Set `SUPABASE_DB_DSN` (Project Settings → Database → Connection string) and 
 
 ```sh
 cd apps/scholarharvester
+cp .env.example .env
 poetry install
 poetry run python harvest.py --since 2022
 ```

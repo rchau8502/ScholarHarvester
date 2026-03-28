@@ -5,6 +5,7 @@ __pycache__/
 .env
 *.env.local
 .env.local.example
+!apps/scholarpath/.env.local.example
 node_modules/
 apps/scholarpath/.next/
 apps/scholarpath/node_modules/

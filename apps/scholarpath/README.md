@@ -26,9 +26,10 @@ Legacy compatibility: `SCHOLARPATH_DATA_URL` is still accepted.
 
 ## Storage model
 
-- Default: live Supabase reads from `dataset`, `metric`, `citation`, and `source_school`.
+- Default: live Supabase reads from `dataset`, `metric`, `citation`, `source_school`, and `institution`.
 - Ingest writes: `/api/ingest` upserts extracted datasets/metrics/citations into Supabase.
 - Planner cloud sync: `/api/plans` stores tasks/schedule snapshots in Supabase `user_plan`.
+- National directory: `/api/institutions` and `/colleges` read the `institution` table populated from the official College Scorecard API.
 - Optional: point `SCHOLARSTACK_DATA_URL` at a remote JSON feed to override Supabase reads.
 
 ## Tests
@@ -40,5 +41,6 @@ Legacy compatibility: `SCHOLARPATH_DATA_URL` is still accepted.
 
 - Planner page with campus/cohort/major selectors + KPI cards and evidence drawer.
 - Search page for source schools with quick “Add to planner” helper.
+- Colleges page for national institution search and profile views.
 - AI Ingest page for turning raw source text into structured metrics through the OpenAI Responses API.
 - Non-affiliation notice baked into layout.
